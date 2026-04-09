@@ -4,6 +4,9 @@ import type * as EffectAcpSchema from "effect-acp/schema";
 import {
   buildCursorCapabilitiesFromConfigOptions,
   getCursorModelCapabilities,
+  getCursorParameterizedModelPickerUnsupportedMessage,
+  parseCursorCliConfigChannel,
+  parseCursorVersionDate,
   resolveCursorAcpBaseModelId,
   resolveCursorAcpConfigUpdates,
   resolveCursorAgentModel,
@@ -157,6 +160,48 @@ describe("buildCursorCapabilitiesFromConfigOptions", () => {
       contextWindowOptions: [],
       promptInjectedEffortLevels: [],
     });
+  });
+});
+
+describe("Cursor parameterized model picker preview gating", () => {
+  it("parses Cursor CLI version dates from build versions", () => {
+    expect(parseCursorVersionDate("2026.04.08-c4e73a3")).toBe(20260408);
+    expect(parseCursorVersionDate("2026.04.09")).toBe(20260409);
+    expect(parseCursorVersionDate("not-a-version")).toBeUndefined();
+  });
+
+  it("parses the Cursor CLI channel from cli-config.json", () => {
+    expect(parseCursorCliConfigChannel('{ "channel": "lab" }')).toBe("lab");
+    expect(parseCursorCliConfigChannel('{ "channel": "stable" }')).toBe("stable");
+    expect(parseCursorCliConfigChannel('{ "version": 1 }')).toBeUndefined();
+    expect(parseCursorCliConfigChannel("not-json")).toBeUndefined();
+  });
+
+  it("returns no warning when the preview requirements are met", () => {
+    expect(
+      getCursorParameterizedModelPickerUnsupportedMessage({
+        version: "2026.04.08-c4e73a3",
+        channel: "lab",
+      }),
+    ).toBeUndefined();
+  });
+
+  it("explains when the Cursor Agent version is too old", () => {
+    expect(
+      getCursorParameterizedModelPickerUnsupportedMessage({
+        version: "2026.04.07-c4e73a3",
+        channel: "lab",
+      }),
+    ).toContain("too old");
+  });
+
+  it("explains when the Cursor Agent channel is not lab", () => {
+    expect(
+      getCursorParameterizedModelPickerUnsupportedMessage({
+        version: "2026.04.08-c4e73a3",
+        channel: "stable",
+      }),
+    ).toContain("lab channel");
   });
 });
 

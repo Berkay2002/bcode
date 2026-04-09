@@ -1,3 +1,7 @@
+import * as nodeFs from "node:fs";
+import * as nodeOs from "node:os";
+import * as nodePath from "node:path";
+
 import type {
   CursorModelOptions,
   CursorSettings,
@@ -186,6 +190,7 @@ const BUILT_IN_MODELS: ReadonlyArray<ServerProviderModel> = [
 ];
 
 const CURSOR_ACP_MODEL_DISCOVERY_TIMEOUT_MS = 15_000;
+const CURSOR_PARAMETERIZED_MODEL_PICKER_MIN_VERSION_DATE = 2026_04_08;
 export const CURSOR_PARAMETERIZED_MODEL_PICKER_CAPABILITIES = {
   _meta: {
     parameterizedModelPicker: true,
@@ -657,6 +662,75 @@ export interface CursorAboutResult {
   readonly message?: string;
 }
 
+export function parseCursorVersionDate(version: string | null | undefined): number | undefined {
+  const match = version?.trim().match(/^(\d{4})\.(\d{2})\.(\d{2})(?:\b|-|$)/);
+  if (!match) {
+    return undefined;
+  }
+  const [, year, month, day] = match;
+  return Number(`${year}${month}${day}`);
+}
+
+export function parseCursorCliConfigChannel(raw: string): string | undefined {
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (
+      typeof parsed === "object" &&
+      parsed !== null &&
+      "channel" in parsed &&
+      typeof parsed.channel === "string"
+    ) {
+      const channel = parsed.channel.trim().toLowerCase();
+      return channel.length > 0 ? channel : undefined;
+    }
+  } catch {
+    return undefined;
+  }
+  return undefined;
+}
+
+function readCursorCliConfigChannel(): string | undefined {
+  try {
+    const configPath = nodePath.join(nodeOs.homedir(), ".cursor", "cli-config.json");
+    return parseCursorCliConfigChannel(nodeFs.readFileSync(configPath, "utf8"));
+  } catch {
+    return undefined;
+  }
+}
+
+export function getCursorParameterizedModelPickerUnsupportedMessage(input: {
+  readonly version: string | null | undefined;
+  readonly channel: string | null | undefined;
+}): string | undefined {
+  const reasons: Array<string> = [];
+  const versionDate = parseCursorVersionDate(input.version);
+  if (
+    versionDate !== undefined &&
+    versionDate < CURSOR_PARAMETERIZED_MODEL_PICKER_MIN_VERSION_DATE
+  ) {
+    reasons.push(
+      `Cursor Agent CLI version ${input.version} is too old for Cursor ACP parameterized model picker`,
+    );
+  }
+
+  const normalizedChannel = input.channel?.trim().toLowerCase();
+  if (
+    normalizedChannel !== undefined &&
+    normalizedChannel.length > 0 &&
+    normalizedChannel !== "lab"
+  ) {
+    reasons.push(
+      `Cursor Agent CLI channel is ${JSON.stringify(input.channel)}, but parameterized model picker is only available on the lab channel`,
+    );
+  }
+
+  if (reasons.length === 0) {
+    return undefined;
+  }
+
+  return `${reasons.join(". ")}. Run \`agent set-channel lab && agent update\` and use Cursor Agent CLI 2026.04.08 or newer.`;
+}
+
 /**
  * Parse the output of `agent about` to extract version and authentication
  * status in a single probe.
@@ -830,6 +904,29 @@ export const checkCursorProviderStatus = Effect.fn("checkCursorProviderStatus")(
     }
 
     const parsed = parseCursorAboutOutput(aboutProbe.success.value);
+    const parameterizedModelPickerUnsupportedMessage =
+      getCursorParameterizedModelPickerUnsupportedMessage({
+        version: parsed.version,
+        channel: readCursorCliConfigChannel(),
+      });
+    if (parameterizedModelPickerUnsupportedMessage) {
+      return buildServerProvider({
+        provider: PROVIDER,
+        enabled: cursorSettings.enabled,
+        checkedAt,
+        models: fallbackModels,
+        probe: {
+          installed: true,
+          version: parsed.version,
+          status: "error",
+          auth: parsed.auth,
+          message:
+            parsed.auth.status === "unauthenticated" && parsed.message
+              ? `${parameterizedModelPickerUnsupportedMessage} ${parsed.message}`
+              : parameterizedModelPickerUnsupportedMessage,
+        },
+      });
+    }
     let discoveredModels = Option.none<ReadonlyArray<ServerProviderModel>>();
     if (parsed.auth.status !== "unauthenticated") {
       discoveredModels = yield* discoverCursorModelsViaAcp(cursorSettings).pipe(
