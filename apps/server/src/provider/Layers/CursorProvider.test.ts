@@ -2,10 +2,13 @@ import { describe, expect, it } from "vitest";
 import type * as EffectAcpSchema from "effect-acp/schema";
 
 import {
+  buildCursorDiscoveredModelsCacheKey,
   buildCursorCapabilitiesFromConfigOptions,
   buildCursorDiscoveredModelsFromConfigOptions,
+  getFreshCursorDiscoveredModelsFromCache,
   getCursorFallbackModels,
   getCursorParameterizedModelPickerUnsupportedMessage,
+  mergeCursorDiscoveredModelsWithCachedCapabilities,
   parseCursorAboutOutput,
   parseCursorCliConfigChannel,
   parseCursorVersionDate,
@@ -90,6 +93,64 @@ const parameterizedClaudeConfigOptions = [
   },
 ] satisfies ReadonlyArray<EffectAcpSchema.SessionConfigOption>;
 
+const parameterizedClaudeModelOptionConfigOptions = [
+  {
+    type: "select",
+    currentValue: "claude-opus-4-6",
+    options: [{ name: "Opus 4.6", value: "claude-opus-4-6" }],
+    category: "model",
+    id: "model",
+    name: "Model",
+  },
+  {
+    type: "select",
+    currentValue: "high",
+    options: [
+      { name: "Low", value: "low" },
+      { name: "Medium", value: "medium" },
+      { name: "High", value: "high" },
+    ],
+    category: "thought_level",
+    id: "reasoning",
+    name: "Reasoning",
+  },
+  {
+    type: "select",
+    currentValue: "max",
+    options: [
+      { name: "Low", value: "low" },
+      { name: "Medium", value: "medium" },
+      { name: "High", value: "high" },
+      { name: "Max", value: "max" },
+    ],
+    category: "model_option",
+    id: "effort",
+    name: "Effort",
+  },
+  {
+    type: "select",
+    currentValue: "true",
+    options: [
+      { name: "Off", value: "false" },
+      { name: "Fast", value: "true" },
+    ],
+    category: "model_config",
+    id: "fast",
+    name: "Fast",
+  },
+  {
+    type: "select",
+    currentValue: "true",
+    options: [
+      { name: "Off", value: "false" },
+      { name: ":icon-brain:", value: "true" },
+    ],
+    category: "model_config",
+    id: "thinking",
+    name: "Thinking",
+  },
+] satisfies ReadonlyArray<EffectAcpSchema.SessionConfigOption>;
+
 const sessionNewCursorConfigOptions = [
   {
     type: "select",
@@ -142,6 +203,112 @@ describe("getCursorFallbackModels", () => {
   });
 });
 
+describe("Cursor discovered model cache helpers", () => {
+  it("reuses discovered Cursor models while the cache entry is fresh", () => {
+    const models = buildCursorDiscoveredModelsFromConfigOptions(sessionNewCursorConfigOptions);
+    const cacheKey = buildCursorDiscoveredModelsCacheKey({
+      binaryPath: "/usr/local/bin/agent",
+      apiEndpoint: "http://localhost:3000",
+      version: "2026.04.13-abcd123",
+    });
+
+    expect(
+      getFreshCursorDiscoveredModelsFromCache({
+        cache: {
+          cacheKey,
+          expiresAtMs: 20_000,
+          models,
+        },
+        cacheKey,
+        nowMs: 10_000,
+      }),
+    ).toEqual(models);
+  });
+
+  it("ignores expired or mismatched Cursor model cache entries", () => {
+    const models = buildCursorDiscoveredModelsFromConfigOptions(sessionNewCursorConfigOptions);
+
+    expect(
+      getFreshCursorDiscoveredModelsFromCache({
+        cache: {
+          cacheKey: "a",
+          expiresAtMs: 5_000,
+          models,
+        },
+        cacheKey: "a",
+        nowMs: 5_000,
+      }),
+    ).toBeUndefined();
+    expect(
+      getFreshCursorDiscoveredModelsFromCache({
+        cache: {
+          cacheKey: "a",
+          expiresAtMs: 10_000,
+          models,
+        },
+        cacheKey: "b",
+        nowMs: 1_000,
+      }),
+    ).toBeUndefined();
+  });
+
+  it("fills missing discovered Cursor capabilities from the last cached snapshot", () => {
+    expect(
+      mergeCursorDiscoveredModelsWithCachedCapabilities(
+        [
+          {
+            slug: "claude-opus-4-6",
+            name: "Opus 4.6",
+            isCustom: false,
+            capabilities: {
+              reasoningEffortLevels: [],
+              supportsFastMode: false,
+              supportsThinkingToggle: false,
+              contextWindowOptions: [],
+              promptInjectedEffortLevels: [],
+            },
+          },
+        ],
+        [
+          {
+            slug: "claude-opus-4-6",
+            name: "Opus 4.6",
+            isCustom: false,
+            capabilities: {
+              reasoningEffortLevels: [
+                { value: "medium", label: "Medium" },
+                { value: "high", label: "High", isDefault: true },
+                { value: "max", label: "Max" },
+              ],
+              supportsFastMode: true,
+              supportsThinkingToggle: true,
+              contextWindowOptions: [{ value: "200k", label: "200K", isDefault: true }],
+              promptInjectedEffortLevels: [],
+            },
+          },
+        ],
+      ),
+    ).toEqual([
+      {
+        slug: "claude-opus-4-6",
+        name: "Opus 4.6",
+        isCustom: false,
+        capabilities: {
+          reasoningEffortLevels: [
+            { value: "medium", label: "Medium" },
+            { value: "high", label: "High", isDefault: true },
+            { value: "max", label: "Max" },
+          ],
+          supportsFastMode: true,
+          supportsThinkingToggle: true,
+          contextWindowOptions: [{ value: "200k", label: "200K", isDefault: true }],
+          promptInjectedEffortLevels: [],
+        },
+      },
+    ]);
+  });
+});
+
 describe("buildCursorCapabilitiesFromConfigOptions", () => {
   it("derives model capabilities from parameterized Cursor ACP config options", () => {
     expect(buildCursorCapabilitiesFromConfigOptions(parameterizedGpt54ConfigOptions)).toEqual({
@@ -169,6 +336,23 @@ describe("buildCursorCapabilitiesFromConfigOptions", () => {
         { value: "high", label: "High", isDefault: true },
       ],
       supportsFastMode: false,
+      supportsThinkingToggle: true,
+      contextWindowOptions: [],
+      promptInjectedEffortLevels: [],
+    });
+  });
+
+  it("prefers the newer model_option effort control over legacy thought_level", () => {
+    expect(
+      buildCursorCapabilitiesFromConfigOptions(parameterizedClaudeModelOptionConfigOptions),
+    ).toEqual({
+      reasoningEffortLevels: [
+        { value: "low", label: "Low" },
+        { value: "medium", label: "Medium" },
+        { value: "high", label: "High" },
+        { value: "max", label: "Max", isDefault: true },
+      ],
+      supportsFastMode: true,
       supportsThinkingToggle: true,
       contextWindowOptions: [],
       promptInjectedEffortLevels: [],
@@ -404,5 +588,17 @@ describe("resolveCursorAcpConfigUpdates", () => {
         fastMode: false,
       }),
     ).toEqual([{ configId: "fast", value: "false" }]);
+  });
+
+  it("writes Cursor effort changes through the newer model_option config when available", () => {
+    expect(
+      resolveCursorAcpConfigUpdates(parameterizedClaudeModelOptionConfigOptions, {
+        reasoning: "max",
+        thinking: false,
+      }),
+    ).toEqual([
+      { configId: "effort", value: "max" },
+      { configId: "thinking", value: "false" },
+    ]);
   });
 });

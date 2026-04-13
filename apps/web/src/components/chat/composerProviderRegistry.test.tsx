@@ -97,6 +97,7 @@ const CURSOR_MODELS: ReadonlyArray<ServerProviderModel> = [
         { value: "low", label: "Low" },
         { value: "medium", label: "Medium" },
         { value: "high", label: "High", isDefault: true },
+        { value: "max", label: "Max" },
       ],
       supportsFastMode: false,
       supportsThinkingToggle: true,
@@ -501,6 +502,24 @@ describe("getComposerProviderState", () => {
     });
 
     expect(state.modelOptionsForDispatch).toHaveProperty("thinking", true);
+  });
+
+  it("preserves Cursor max effort for Claude-family models", () => {
+    const state = getComposerProviderState({
+      provider: "cursor",
+      model: "claude-opus-4-6",
+      models: CURSOR_MODELS,
+      prompt: "",
+      modelOptions: {
+        cursor: { reasoning: "max" },
+      },
+    });
+
+    expect(state).toEqual({
+      provider: "cursor",
+      promptEffort: "max",
+      modelOptionsForDispatch: { reasoning: "max" },
+    });
   });
 
   it("preserves Claude default effort explicitly in dispatch options", () => {

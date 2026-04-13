@@ -6,7 +6,7 @@ export const CODEX_REASONING_EFFORT_OPTIONS = ["xhigh", "high", "medium", "low"]
 export type CodexReasoningEffort = (typeof CODEX_REASONING_EFFORT_OPTIONS)[number];
 export const CLAUDE_CODE_EFFORT_OPTIONS = ["low", "medium", "high", "max", "ultrathink"] as const;
 export type ClaudeCodeEffort = (typeof CLAUDE_CODE_EFFORT_OPTIONS)[number];
-export const CURSOR_REASONING_OPTIONS = ["low", "medium", "high", "xhigh"] as const;
+export const CURSOR_REASONING_OPTIONS = ["low", "medium", "high", "max", "xhigh"] as const;
 export type CursorReasoningOption = (typeof CURSOR_REASONING_OPTIONS)[number];
 
 export type ProviderReasoningEffort =
