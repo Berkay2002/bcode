@@ -64,6 +64,8 @@ const makeProviderSnapshot = (input: {
       checkedAt: input.checkedAt,
       message: input.enabled ? "Perf fixture provider active." : "Disabled in T3 Code settings.",
       models: CODEX_MODELS,
+      slashCommands: [],
+      skills: [],
     };
   }
 
@@ -81,6 +83,8 @@ const makeProviderSnapshot = (input: {
       ? "Perf harness only stubs Codex runtime sessions."
       : "Disabled in T3 Code settings.",
     models: CLAUDE_MODELS,
+    slashCommands: [],
+    skills: [],
   };
 };
 
