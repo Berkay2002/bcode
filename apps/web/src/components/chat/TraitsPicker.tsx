@@ -149,6 +149,7 @@ export interface TraitsMenuContentProps {
   allowPromptInjectedEffort?: boolean;
   triggerVariant?: VariantProps<typeof buttonVariants>["variant"];
   triggerClassName?: string;
+  menuSide?: "top" | "bottom" | "left" | "right";
 }
 
 export const TraitsMenuContent = memo(function TraitsMenuContentImpl({
@@ -336,6 +337,7 @@ export const TraitsPicker = memo(function TraitsPicker({
   allowPromptInjectedEffort = true,
   triggerVariant,
   triggerClassName,
+  menuSide,
   ...persistence
 }: TraitsMenuContentProps & TraitsPersistence) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -407,7 +409,7 @@ export const TraitsPicker = memo(function TraitsPicker({
           </>
         )}
       </MenuTrigger>
-      <MenuPopup align="start">
+      <MenuPopup align="start" {...(menuSide ? { side: menuSide } : {})}>
         <TraitsMenuContent
           provider={provider}
           models={models}

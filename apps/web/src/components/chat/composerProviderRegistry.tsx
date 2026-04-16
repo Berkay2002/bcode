@@ -143,6 +143,7 @@ const composerProviderRegistry: Record<ProviderKind, ProviderRegistryEntry> = {
           modelOptions={modelOptions}
           prompt={prompt}
           onPromptChange={onPromptChange}
+          menuSide="top"
         />
       ),
   },
@@ -188,6 +189,7 @@ const composerProviderRegistry: Record<ProviderKind, ProviderRegistryEntry> = {
           modelOptions={modelOptions}
           prompt={prompt}
           onPromptChange={onPromptChange}
+          menuSide="top"
         />
       ),
   },
