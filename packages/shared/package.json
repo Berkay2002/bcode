@@ -75,6 +75,10 @@
     "./path": {
       "types": "./src/path.ts",
       "import": "./src/path.ts"
+    },
+    "./claudeTierDefaults": {
+      "types": "./src/claudeTierDefaults.ts",
+      "import": "./src/claudeTierDefaults.ts"
     }
   },
   "scripts": {
