@@ -552,6 +552,33 @@ const makeWsRpcLayer = (currentSessionId: AuthSessionId) =>
               const normalizedCommand = yield* normalizeDispatchCommand(command);
               const result = yield* dispatchNormalizedCommand(normalizedCommand);
               if (normalizedCommand.type === "thread.archive") {
+                const readModel = yield* orchestrationEngine.getReadModel();
+                const thread = readModel.threads.find(
+                  (candidate) => candidate.id === normalizedCommand.threadId,
+                );
+
+                if (thread?.session && thread.session.status !== "stopped") {
+                  yield* Effect.gen(function* () {
+                    const stopCommand = yield* normalizeDispatchCommand({
+                      type: "thread.session.stop",
+                      commandId: CommandId.make(
+                        `session-stop-for-archive:${normalizedCommand.commandId}`,
+                      ),
+                      threadId: normalizedCommand.threadId,
+                      createdAt: new Date().toISOString(),
+                    });
+
+                    yield* dispatchNormalizedCommand(stopCommand);
+                  }).pipe(
+                    Effect.catchCause((cause) =>
+                      Effect.logWarning("failed to stop provider session during archive", {
+                        threadId: normalizedCommand.threadId,
+                        cause,
+                      }),
+                    ),
+                  );
+                }
+
                 yield* terminalManager.close({ threadId: normalizedCommand.threadId }).pipe(
                   Effect.catch((error) =>
                     Effect.logWarning("failed to close thread terminals after archive", {
