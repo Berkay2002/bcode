@@ -13,6 +13,7 @@ import type {
   TurnId,
 } from "@t3tools/contracts";
 import {
+  DEFAULT_PROVIDER_KIND,
   PROVIDER_SEND_TURN_MAX_ATTACHMENTS,
   PROVIDER_SEND_TURN_MAX_IMAGE_BYTES,
 } from "@t3tools/contracts";
@@ -555,7 +556,7 @@ export const ChatComposer = memo(
 
     const unlockedSelectedProvider = resolveSelectableProvider(
       providerStatuses,
-      selectedProviderByThreadId ?? threadProvider ?? "codex",
+      selectedProviderByThreadId ?? threadProvider ?? DEFAULT_PROVIDER_KIND,
     );
     const selectedProvider: ProviderKind = lockedProvider ?? unlockedSelectedProvider;
 
