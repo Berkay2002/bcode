@@ -1,10 +1,12 @@
 import {
+  type ClaudeCodeEffort,
   DEFAULT_GIT_TEXT_GENERATION_MODEL_BY_PROVIDER,
   type ModelSelection,
   type ProviderKind,
   type ServerProvider,
 } from "@t3tools/contracts";
 import { normalizeModelSlug, resolveSelectableModel } from "@t3tools/shared/model";
+import { defaultClaudeSelectionForAuth } from "@t3tools/shared/claudeTierDefaults";
 import { getComposerProviderState } from "./components/chat/composerProviderRegistry";
 import { UnifiedSettings } from "@t3tools/contracts/settings";
 import {
@@ -140,10 +142,11 @@ export function resolveAppModelSelection(
 ): string {
   const resolvedProvider = resolveSelectableProvider(providers, provider);
   const options = getAppModelOptions(settings, providers, resolvedProvider, selectedModel);
-  return (
-    resolveSelectableModel(resolvedProvider, selectedModel, options) ??
-    getDefaultServerModel(providers, resolvedProvider)
-  );
+  const fallbackModel =
+    resolvedProvider === "claudeAgent"
+      ? initialClaudeSelection(providers).model
+      : getDefaultServerModel(providers, resolvedProvider);
+  return resolveSelectableModel(resolvedProvider, selectedModel, options) ?? fallbackModel;
 }
 
 export function getCustomModelOptionsByProvider(
@@ -166,6 +169,15 @@ export function getCustomModelOptionsByProvider(
       selectedProvider === "claudeAgent" ? selectedModel : undefined,
     ),
   };
+}
+
+export function initialClaudeSelection(providers: ReadonlyArray<ServerProvider>): {
+  readonly model: string;
+  readonly effort: ClaudeCodeEffort;
+} {
+  const claude = providers.find((p) => p.provider === "claudeAgent");
+  const { model, effort } = defaultClaudeSelectionForAuth(claude?.auth ?? { status: "unknown" });
+  return { model, effort };
 }
 
 export function resolveAppModelSelectionState(

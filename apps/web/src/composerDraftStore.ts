@@ -29,7 +29,7 @@ import { DeepMutable } from "effect/Types";
 import { normalizeModelSlug } from "@t3tools/shared/model";
 import { useMemo } from "react";
 import { getLocalStorageItem } from "./hooks/useLocalStorage";
-import { resolveAppModelSelection } from "./modelSelection";
+import { initialClaudeSelection, resolveAppModelSelection } from "./modelSelection";
 import { DEFAULT_INTERACTION_MODE, DEFAULT_RUNTIME_MODE, type ChatImageAttachment } from "./types";
 import {
   type TerminalContextDraft,
@@ -755,11 +755,15 @@ export function deriveEffectiveComposerModelState(input: {
     input.projectModelSelection?.provider === input.selectedProvider
       ? input.projectModelSelection
       : null;
+  const tierDefault =
+    input.selectedProvider === "claudeAgent" ? initialClaudeSelection(input.providers) : null;
+  const providerDefaultModel =
+    tierDefault?.model ?? getDefaultServerModel(input.providers, input.selectedProvider);
   const baseModel =
     normalizeModelSlug(
       threadModelSelectionForProvider?.model ?? projectModelSelectionForProvider?.model,
       input.selectedProvider,
-    ) ?? getDefaultServerModel(input.providers, input.selectedProvider);
+    ) ?? providerDefaultModel;
   const activeSelection = input.draft?.modelSelectionByProvider?.[input.selectedProvider];
   const selectedModel = activeSelection?.model
     ? resolveAppModelSelection(
@@ -769,11 +773,13 @@ export function deriveEffectiveComposerModelState(input: {
         activeSelection.model,
       )
     : baseModel;
-  const modelOptions =
+  const persistedModelOptions =
     modelSelectionByProviderToOptions(input.draft?.modelSelectionByProvider) ??
     providerModelOptionsFromSelection(threadModelSelectionForProvider) ??
     providerModelOptionsFromSelection(projectModelSelectionForProvider) ??
     null;
+  const modelOptions =
+    persistedModelOptions ?? (tierDefault ? { claudeAgent: { effort: tierDefault.effort } } : null);
 
   return {
     selectedModel,
