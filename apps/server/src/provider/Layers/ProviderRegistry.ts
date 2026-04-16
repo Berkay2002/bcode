@@ -14,6 +14,7 @@ import { ClaudeProvider } from "../Services/ClaudeProvider";
 import type { CodexProviderShape } from "../Services/CodexProvider";
 import { CodexProvider } from "../Services/CodexProvider";
 import { ProviderRegistry, type ProviderRegistryShape } from "../Services/ProviderRegistry";
+import { ProviderUsageLimitsRepository } from "../../persistence/Services/ProviderUsageLimits.ts";
 import {
   hydrateCachedProvider,
   PROVIDER_CACHE_IDS,
@@ -41,6 +42,7 @@ export const ProviderRegistryLive = Layer.effect(
   Effect.gen(function* () {
     const codexProvider = yield* CodexProvider;
     const claudeProvider = yield* ClaudeProvider;
+    const usageLimitsRepository = yield* ProviderUsageLimitsRepository;
     const config = yield* ServerConfig;
     const fileSystem = yield* FileSystem.FileSystem;
     const path = yield* Path.Path;
@@ -179,6 +181,9 @@ export const ProviderRegistryLive = Layer.effect(
     ).pipe(Effect.forkScoped);
     yield* Stream.runForEach(claudeProvider.streamChanges, (provider) =>
       syncProvider(provider),
+    ).pipe(Effect.forkScoped);
+    yield* Stream.runForEach(usageLimitsRepository.streamChanges, (change) =>
+      refresh(change.provider).pipe(Effect.ignoreCause({ log: true })),
     ).pipe(Effect.forkScoped);
 
     return {

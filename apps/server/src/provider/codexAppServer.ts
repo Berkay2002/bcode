@@ -16,8 +16,16 @@ export interface CodexDiscoverySnapshot {
   readonly skills: ReadonlyArray<ServerProviderSkill>;
 }
 
+export interface CodexDiscoveryState extends CodexDiscoverySnapshot {
+  readonly rateLimits: unknown | null;
+}
+
 function readErrorMessage(response: JsonRpcProbeResponse): string | undefined {
   return typeof response.error?.message === "string" ? response.error.message : undefined;
+}
+
+function readCodexRateLimitsSnapshot(response: unknown): unknown | null {
+  return response ?? null;
 }
 
 function readObject(value: unknown): Record<string, unknown> | undefined {
@@ -110,7 +118,7 @@ export async function probeCodexDiscovery(input: {
   readonly homePath?: string;
   readonly cwd: string;
   readonly signal?: AbortSignal;
-}): Promise<CodexDiscoverySnapshot> {
+}): Promise<CodexDiscoveryState> {
   return await new Promise((resolve, reject) => {
     const child = spawn(input.binaryPath, ["app-server"], {
       env: {
@@ -125,8 +133,17 @@ export async function probeCodexDiscovery(input: {
     let completed = false;
     let account: CodexAccountSnapshot | undefined;
     let skills: ReadonlyArray<ServerProviderSkill> | undefined;
+    let rateLimitsResult: unknown | null | undefined;
+    let settleTimer: ReturnType<typeof setTimeout> | undefined;
+    let handleAbort: (() => void) | undefined;
 
     const cleanup = () => {
+      if (settleTimer !== undefined) {
+        clearTimeout(settleTimer);
+      }
+      if (handleAbort) {
+        input.signal?.removeEventListener("abort", handleAbort);
+      }
       output.removeAllListeners();
       output.close();
       child.removeAllListeners();
@@ -152,10 +169,30 @@ export async function probeCodexDiscovery(input: {
       );
 
     const maybeResolve = () => {
-      if (account && skills !== undefined) {
+      if (account && skills !== undefined && rateLimitsResult !== undefined) {
         const resolvedAccount = account;
         const resolvedSkills = skills;
-        finish(() => resolve({ account: resolvedAccount, skills: resolvedSkills }));
+        const resolvedRateLimits = rateLimitsResult;
+        finish(() =>
+          resolve({
+            account: resolvedAccount,
+            skills: resolvedSkills,
+            rateLimits: resolvedRateLimits,
+          }),
+        );
+        return;
+      }
+
+      // If account and skills are ready but rate limits haven't arrived yet,
+      // start a settle timer so we don't block forever.
+      if (account && skills !== undefined && rateLimitsResult === undefined) {
+        if (settleTimer !== undefined) {
+          return;
+        }
+        settleTimer = setTimeout(() => {
+          rateLimitsResult = null;
+          maybeResolve();
+        }, 150);
       }
     };
 
@@ -163,9 +200,8 @@ export async function probeCodexDiscovery(input: {
       fail(new Error("Codex discovery probe aborted."));
       return;
     }
-    input.signal?.addEventListener("abort", () =>
-      fail(new Error("Codex discovery probe aborted.")),
-    );
+    handleAbort = () => fail(new Error("Codex discovery probe aborted."));
+    input.signal?.addEventListener("abort", handleAbort);
 
     const writeMessage = (message: unknown) => {
       if (!child.stdin.writable) {
@@ -176,7 +212,7 @@ export async function probeCodexDiscovery(input: {
       child.stdin.write(`${JSON.stringify(message)}\n`);
     };
 
-    output.on("line", (line) => {
+    const processOutputLine = (line: string) => {
       let parsed: unknown;
       try {
         parsed = JSON.parse(line);
@@ -200,6 +236,7 @@ export async function probeCodexDiscovery(input: {
         writeMessage({ method: "initialized" });
         writeMessage({ id: 2, method: "skills/list", params: { cwds: [input.cwd] } });
         writeMessage({ id: 3, method: "account/read", params: {} });
+        writeMessage({ id: 4, method: "account/rateLimits/read", params: {} });
         return;
       }
 
@@ -219,12 +256,33 @@ export async function probeCodexDiscovery(input: {
 
         account = readCodexAccountSnapshot(response.result);
         maybeResolve();
+        return;
       }
-    });
+
+      if (response.id === 4) {
+        const errorMessage = readErrorMessage(response);
+        if (errorMessage) {
+          rateLimitsResult = null;
+          maybeResolve();
+          return;
+        }
+
+        rateLimitsResult = readCodexRateLimitsSnapshot(response.result);
+        maybeResolve();
+      }
+    };
+
+    output.on("line", processOutputLine);
 
     child.once("error", fail);
     child.once("exit", (code, signal) => {
       if (completed) return;
+      // If we have account and skills already, settle rate limits gracefully
+      if (account && skills !== undefined) {
+        rateLimitsResult = rateLimitsResult ?? null;
+        maybeResolve();
+        return;
+      }
       fail(
         new Error(
           `codex app-server exited before probe completed (code=${code ?? "null"}, signal=${signal ?? "null"}).`,

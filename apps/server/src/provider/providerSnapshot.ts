@@ -4,6 +4,7 @@ import type {
   ServerProviderAuth,
   ServerProviderSkill,
   ServerProviderSlashCommand,
+  ServerProviderUsageLimits,
   ServerProviderModel,
   ServerProviderState,
 } from "@t3tools/contracts";
@@ -135,6 +136,7 @@ export function buildServerProvider(input: {
   slashCommands?: ReadonlyArray<ServerProviderSlashCommand>;
   skills?: ReadonlyArray<ServerProviderSkill>;
   probe: ProviderProbeResult;
+  usageLimits?: ServerProviderUsageLimits;
 }): ServerProvider {
   return {
     provider: input.provider,
@@ -148,6 +150,7 @@ export function buildServerProvider(input: {
     models: input.models,
     slashCommands: [...(input.slashCommands ?? [])],
     skills: [...(input.skills ?? [])],
+    ...(input.usageLimits ? { usageLimits: input.usageLimits } : {}),
   };
 }
 

@@ -6,6 +6,7 @@ import type {
   ServerProviderAuth,
   ServerProviderSlashCommand,
   ServerProviderState,
+  ServerProviderUsageLimits,
 } from "@t3tools/contracts";
 import { Cache, Duration, Effect, Equal, Layer, Option, Result, Schema, Stream } from "effect";
 import { ChildProcess, ChildProcessSpawner } from "effect/unstable/process";
@@ -30,6 +31,8 @@ import { makeManagedServerProvider } from "../makeManagedServerProvider";
 import { ClaudeProvider } from "../Services/ClaudeProvider";
 import { ServerSettingsService } from "../../serverSettings";
 import { ServerSettingsError } from "@t3tools/contracts";
+import { readPersistedProviderUsageLimits } from "../providerUsageLimits";
+import { ProviderUsageLimitsRepository } from "../../persistence/Services/ProviderUsageLimits.ts";
 
 const DEFAULT_CLAUDE_MODEL_CAPABILITIES: ModelCapabilities = {
   reasoningEffortLevels: [],
@@ -473,6 +476,7 @@ export const checkClaudeProviderStatus = Effect.fn("checkClaudeProviderStatus")(
   resolveSlashCommands?: (
     binaryPath: string,
   ) => Effect.Effect<ReadonlyArray<ServerProviderSlashCommand> | undefined>,
+  resolveCachedUsageLimits?: () => Effect.Effect<ServerProviderUsageLimits | undefined>,
 ): Effect.fn.Return<
   ServerProvider,
   ServerSettingsError,
@@ -489,6 +493,9 @@ export const checkClaudeProviderStatus = Effect.fn("checkClaudeProviderStatus")(
     claudeSettings.customModels,
     DEFAULT_CLAUDE_MODEL_CAPABILITIES,
   );
+  const cachedUsageLimits = resolveCachedUsageLimits
+    ? yield* resolveCachedUsageLimits()
+    : undefined;
 
   if (!claudeSettings.enabled) {
     return buildServerProvider({
@@ -503,6 +510,7 @@ export const checkClaudeProviderStatus = Effect.fn("checkClaudeProviderStatus")(
         auth: { status: "unknown" },
         message: "Claude is disabled in T3 Code settings.",
       },
+      ...(cachedUsageLimits ? { usageLimits: cachedUsageLimits } : {}),
     });
   }
 
@@ -656,6 +664,7 @@ export const checkClaudeProviderStatus = Effect.fn("checkClaudeProviderStatus")(
       },
       ...(parsed.message ? { message: parsed.message } : {}),
     },
+    ...(cachedUsageLimits ? { usageLimits: cachedUsageLimits } : {}),
   });
 });
 
@@ -704,6 +713,7 @@ export const ClaudeProviderLive = Layer.effect(
   Effect.gen(function* () {
     const serverSettings = yield* ServerSettingsService;
     const spawner = yield* ChildProcessSpawner.ChildProcessSpawner;
+    const usageLimitsRepository = yield* ProviderUsageLimitsRepository;
 
     const subscriptionProbeCache = yield* Cache.make({
       capacity: 1,
@@ -720,9 +730,14 @@ export const ClaudeProviderLive = Layer.effect(
         Cache.get(subscriptionProbeCache, binaryPath).pipe(
           Effect.map((probe) => probe?.slashCommands),
         ),
+      () =>
+        readPersistedProviderUsageLimits(PROVIDER, usageLimitsRepository).pipe(
+          Effect.orElseSucceed(() => undefined),
+        ),
     ).pipe(
       Effect.provideService(ServerSettingsService, serverSettings),
       Effect.provideService(ChildProcessSpawner.ChildProcessSpawner, spawner),
+      Effect.provideService(ProviderUsageLimitsRepository, usageLimitsRepository),
     );
 
     return yield* makeManagedServerProvider<ClaudeSettings>({

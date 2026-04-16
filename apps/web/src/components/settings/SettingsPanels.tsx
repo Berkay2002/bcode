@@ -53,7 +53,11 @@ import {
   selectThreadShellsAcrossEnvironments,
   useStore,
 } from "../../store";
-import { formatRelativeTime, formatRelativeTimeLabel } from "../../timestampFormat";
+import {
+  formatRelativeTime,
+  formatRelativeTimeLabel,
+  getTimestampFormatOptions,
+} from "../../timestampFormat";
 import { cn } from "../../lib/utils";
 import { Button } from "../ui/button";
 import { Collapsible, CollapsibleContent } from "../ui/collapsible";
@@ -218,6 +222,69 @@ function ProviderLastChecked({ lastCheckedAt }: { lastCheckedAt: string | null }
         <>Checked {lastCheckedRelative.value}</>
       )}
     </span>
+  );
+}
+
+function formatUsageLimitResetLabel(
+  resetsAt: string,
+  timestampFormat: (typeof DEFAULT_UNIFIED_SETTINGS)["timestampFormat"],
+) {
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    ...getTimestampFormatOptions(timestampFormat, false),
+  }).format(new Date(resetsAt));
+}
+
+function ProviderUsageLimitsSection({
+  provider,
+  timestampFormat,
+}: {
+  provider: ServerProvider;
+  timestampFormat: (typeof DEFAULT_UNIFIED_SETTINGS)["timestampFormat"];
+}) {
+  const windows = provider.usageLimits?.windows ?? [];
+
+  if (windows.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="px-4 pb-4 sm:px-5">
+      <div className="space-y-3">
+        {windows.map((window) => {
+          const remainingPercentage = Math.max(0, 100 - window.usedPercentage);
+
+          return (
+            <div key={`${window.kind}:${window.resetsAt}`} className="space-y-1.5">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-xs font-medium text-foreground">{window.label}</span>
+                <span className="text-[11px] text-muted-foreground">
+                  {remainingPercentage}% remaining
+                </span>
+              </div>
+              <div
+                className="h-1.5 overflow-hidden rounded-full bg-muted"
+                role="progressbar"
+                aria-label={window.label}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={window.usedPercentage}
+              >
+                <div
+                  className="h-full rounded-full bg-foreground/80 transition-[width]"
+                  style={{ width: `${window.usedPercentage}%` }}
+                />
+              </div>
+              <div className="text-[11px] text-muted-foreground">
+                Resets {formatUsageLimitResetLabel(window.resetsAt, timestampFormat)}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -1199,6 +1266,13 @@ export function GeneralSettingsPanel() {
                   </div>
                 </div>
               </div>
+
+              {providerCard.liveProvider ? (
+                <ProviderUsageLimitsSection
+                  provider={providerCard.liveProvider}
+                  timestampFormat={settings.timestampFormat}
+                />
+              ) : null}
 
               <Collapsible
                 open={openProviderDetails[providerCard.provider]}
