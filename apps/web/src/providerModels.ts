@@ -1,5 +1,6 @@
 import {
   DEFAULT_MODEL_BY_PROVIDER,
+  DEFAULT_PROVIDER_KIND,
   type ModelCapabilities,
   type ProviderKind,
   type ServerProvider,
@@ -36,15 +37,28 @@ export function isProviderEnabled(
   return getProviderSnapshot(providers, provider)?.enabled ?? true;
 }
 
+function isProviderAvailable(
+  providers: ReadonlyArray<ServerProvider>,
+  provider: ProviderKind,
+): boolean {
+  const snapshot = getProviderSnapshot(providers, provider);
+  if (!snapshot) return true;
+  if (!snapshot.enabled) return false;
+  return snapshot.status !== "error" && snapshot.status !== "disabled";
+}
+
 export function resolveSelectableProvider(
   providers: ReadonlyArray<ServerProvider>,
   provider: ProviderKind | null | undefined,
 ): ProviderKind {
-  const requested = provider ?? "codex";
-  if (isProviderEnabled(providers, requested)) {
+  const requested = provider ?? DEFAULT_PROVIDER_KIND;
+  if (isProviderAvailable(providers, requested)) {
     return requested;
   }
-  return providers.find((candidate) => candidate.enabled)?.provider ?? requested;
+  return (
+    providers.find((candidate) => isProviderAvailable(providers, candidate.provider))?.provider ??
+    requested
+  );
 }
 
 export function getProviderModelCapabilities(
