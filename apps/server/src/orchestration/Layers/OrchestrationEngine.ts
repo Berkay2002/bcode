@@ -4,7 +4,7 @@ import type {
   ProjectId,
   ThreadId,
 } from "@t3tools/contracts";
-import { OrchestrationCommand } from "@t3tools/contracts";
+import { DispatchableClientOrchestrationCommand, OrchestrationCommand } from "@t3tools/contracts";
 import {
   Cause,
   Deferred,
@@ -14,10 +14,11 @@ import {
   Layer,
   Metric,
   Option,
+  Order,
   PubSub,
-  Queue,
   Schema,
   Stream,
+  TxPriorityQueue,
 } from "effect";
 import * as SqlClient from "effect/unstable/sql/SqlClient";
 
@@ -50,6 +51,24 @@ interface CommandEnvelope {
   startedAtMs: number;
 }
 
+type CommandPriority = 0 | 1;
+
+interface PrioritizedCommandEnvelope {
+  readonly priority: CommandPriority;
+  readonly insertionSequence: number;
+  readonly envelope: CommandEnvelope;
+}
+
+const COMMAND_PRIORITY = {
+  control: 0,
+  stream: 1,
+} as const satisfies Record<string, CommandPriority>;
+
+const prioritizedCommandEnvelopeOrder = Order.combine(
+  Order.mapInput(Order.Number, (item: PrioritizedCommandEnvelope) => item.priority),
+  Order.mapInput(Order.Number, (item: PrioritizedCommandEnvelope) => item.insertionSequence),
+);
+
 function commandToAggregateRef(command: OrchestrationCommand): {
   readonly aggregateKind: "project" | "thread";
   readonly aggregateId: ProjectId | ThreadId;
@@ -70,6 +89,13 @@ function commandToAggregateRef(command: OrchestrationCommand): {
   }
 }
 
+function commandPriority(command: OrchestrationCommand): CommandPriority {
+  if (Schema.is(DispatchableClientOrchestrationCommand)(command)) {
+    return COMMAND_PRIORITY.control;
+  }
+  return COMMAND_PRIORITY.stream;
+}
+
 const makeOrchestrationEngine = Effect.gen(function* () {
   const sql = yield* SqlClient.SqlClient;
   const eventStore = yield* OrchestrationEventStore;
@@ -78,8 +104,11 @@ const makeOrchestrationEngine = Effect.gen(function* () {
   const projectionSnapshotQuery = yield* ProjectionSnapshotQuery;
 
   let readModel = createEmptyReadModel(new Date().toISOString());
+  let nextCommandInsertionSequence = 0;
 
-  const commandQueue = yield* Queue.unbounded<CommandEnvelope>();
+  const commandQueue = yield* TxPriorityQueue.empty<PrioritizedCommandEnvelope>(
+    prioritizedCommandEnvelopeOrder,
+  );
   const eventPubSub = yield* PubSub.unbounded<OrchestrationEvent>();
 
   const processEnvelope = (envelope: CommandEnvelope): Effect.Effect<void> => {
@@ -272,7 +301,13 @@ const makeOrchestrationEngine = Effect.gen(function* () {
   yield* projectionPipeline.bootstrap;
   readModel = yield* projectionSnapshotQuery.getSnapshot();
 
-  const worker = Effect.forever(Queue.take(commandQueue).pipe(Effect.flatMap(processEnvelope)));
+  const worker = Effect.forever(
+    TxPriorityQueue.take(commandQueue).pipe(
+      Effect.tx,
+      Effect.map((item) => item.envelope),
+      Effect.flatMap(processEnvelope),
+    ),
+  );
   yield* Effect.forkScoped(worker);
   yield* Effect.logDebug("orchestration engine started").pipe(
     Effect.annotateLogs({ sequence: readModel.snapshotSequence }),
@@ -287,7 +322,11 @@ const makeOrchestrationEngine = Effect.gen(function* () {
   const dispatch: OrchestrationEngineShape["dispatch"] = (command) =>
     Effect.gen(function* () {
       const result = yield* Deferred.make<{ sequence: number }, OrchestrationDispatchError>();
-      yield* Queue.offer(commandQueue, { command, result, startedAtMs: Date.now() });
+      yield* TxPriorityQueue.offer(commandQueue, {
+        priority: commandPriority(command),
+        insertionSequence: nextCommandInsertionSequence++,
+        envelope: { command, result, startedAtMs: Date.now() },
+      }).pipe(Effect.tx);
       return yield* Deferred.await(result);
     });
 
