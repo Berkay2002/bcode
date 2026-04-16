@@ -725,6 +725,8 @@ describe("GeneralSettingsPanel observability", () => {
           auth: { status: "authenticated", label: "ChatGPT Pro Subscription" },
           checkedAt: "2026-04-04T00:00:00.000Z",
           models: [],
+          slashCommands: [],
+          skills: [],
           usageLimits: {
             updatedAt: "2026-04-04T00:00:00.000Z",
             windows: [
@@ -779,6 +781,8 @@ describe("GeneralSettingsPanel observability", () => {
           auth: { status: "authenticated", label: "Claude Pro Subscription" },
           checkedAt: "2026-04-04T00:00:00.000Z",
           models: [],
+          slashCommands: [],
+          skills: [],
           usageLimits: {
             updatedAt: "2026-04-04T00:00:00.000Z",
             windows: [
@@ -819,6 +823,8 @@ describe("GeneralSettingsPanel observability", () => {
           auth: { status: "authenticated" },
           checkedAt: "2026-04-04T00:00:00.000Z",
           models: [],
+          slashCommands: [],
+          skills: [],
         },
       ],
     });
