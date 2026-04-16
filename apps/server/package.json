@@ -1,19 +1,22 @@
 {
-  "name": "t3",
+  "name": "@berkayorhan/bcode",
   "version": "0.0.17",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/pingdotgg/t3code",
+    "url": "https://github.com/Berkay2002/bcode",
     "directory": "apps/server"
   },
   "bin": {
-    "t3": "./dist/bin.mjs"
+    "bcode": "./dist/bin.mjs"
   },
   "files": [
     "dist"
   ],
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "bun run src/bin.ts",
     "build": "node scripts/cli.ts build",
