@@ -242,24 +242,23 @@ it.layer(Layer.mergeAll(NodeServices.layer, ServerSettingsService.layerTest()))(
       it.effect("includes probed codex skills in the provider snapshot", () =>
         Effect.gen(function* () {
           yield* withTempCodexHome();
-          const status = yield* checkCodexProviderStatus(
-            () =>
-              Effect.succeed({
-                account: {
-                  type: "chatgpt" as const,
-                  planType: "pro" as const,
-                  sparkEnabled: true,
+          const status = yield* checkCodexProviderStatus(() =>
+            Effect.succeed({
+              account: {
+                type: "chatgpt" as const,
+                planType: "pro" as const,
+                sparkEnabled: true,
+              },
+              skills: [
+                {
+                  name: "github:gh-fix-ci",
+                  path: "/Users/test/.codex/skills/gh-fix-ci/SKILL.md",
+                  enabled: true,
+                  displayName: "CI Debug",
+                  shortDescription: "Debug failing GitHub Actions checks",
                 },
-                skills: [
-                  {
-                    name: "github:gh-fix-ci",
-                    path: "/Users/test/.codex/skills/gh-fix-ci/SKILL.md",
-                    enabled: true,
-                    displayName: "CI Debug",
-                    shortDescription: "Debug failing GitHub Actions checks",
-                  },
-                ],
-              }),
+              ],
+            }),
           );
 
           assert.deepStrictEqual(status.skills, [

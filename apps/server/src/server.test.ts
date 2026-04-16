@@ -2011,14 +2011,8 @@ it.layer(NodeServices.layer)("server router seam", (it) => {
 
       assertTrue(result._tag === "Failure");
       assertTrue(result.failure._tag === "ProjectSearchEntriesError");
-      assertInclude(
-        result.failure.message,
-        "Workspace root does not exist:",
-      );
-      assertInclude(
-        result.failure.message,
-        "definitely",
-      );
+      assertInclude(result.failure.message, "Workspace root does not exist:");
+      assertInclude(result.failure.message, "definitely");
     }).pipe(Effect.provide(NodeHttpServer.layerTest)),
   );
 

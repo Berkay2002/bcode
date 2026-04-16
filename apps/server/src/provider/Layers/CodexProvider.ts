@@ -515,7 +515,9 @@ export const checkCodexProviderStatus = Effect.fn("checkCodexProviderStatus")(fu
   );
   const accountSnapshot = discovery?.account;
   const resolvedModels = adjustCodexModelsForAccount(models, accountSnapshot);
-  const discoveryUsageLimits = isResolvedCodexDiscoveryState(discovery) ? discovery.usageLimits : undefined;
+  const discoveryUsageLimits = isResolvedCodexDiscoveryState(discovery)
+    ? discovery.usageLimits
+    : undefined;
   const usageLimits = cachedUsageLimits ?? discoveryUsageLimits;
 
   if (Result.isFailure(authProbe)) {

@@ -216,6 +216,7 @@ bun run build && bun run test
 Expected: All commands succeed with exit code 0.
 
 **Note on conflict resolution:** If any `git apply --check` fails, download the diff, inspect it, and resolve conflicts manually. For each conflict:
+
 1. Read the failed hunks to understand intent
 2. Apply the non-conflicting hunks: `gh pr diff <N> --repo pingdotgg/t3code | git apply --reject`
 3. Manually merge the `.rej` files
@@ -228,6 +229,7 @@ Expected: All commands succeed with exit code 0.
 ### Task 5: Rebrand core branding constants
 
 **Files:**
+
 - Modify: `apps/desktop/src/appBranding.ts:5`
 - Modify: `apps/web/src/branding.ts:13`
 
@@ -266,6 +268,7 @@ EOF
 ### Task 6: Rebrand desktop package and dialogs
 
 **Files:**
+
 - Modify: `apps/desktop/package.json:29`
 - Modify: `apps/desktop/src/main.ts:120,802,907`
 
@@ -282,15 +285,18 @@ In `apps/desktop/package.json` line 29, change:
 In `apps/desktop/src/main.ts`:
 
 Line 120 - legacy user data dir name (keep for backwards compat with existing installs):
+
 ```typescript
 // Before:
 const LEGACY_USER_DATA_DIR_NAME = isDevelopment ? "T3 Code (Dev)" : "T3 Code (Alpha)";
 // After (keep as-is for migration compatibility - this references old directory names):
 const LEGACY_USER_DATA_DIR_NAME = isDevelopment ? "T3 Code (Dev)" : "T3 Code (Alpha)";
 ```
+
 **Note:** Do NOT change `LEGACY_USER_DATA_DIR_NAME` - it must match the old directory name for migration.
 
 Line 802 - error dialog:
+
 ```typescript
 // Before:
 dialog.showErrorBox("T3 Code failed to start", `Stage: ${stage}\n${message}${detail}`);
@@ -299,6 +305,7 @@ dialog.showErrorBox("BCode failed to start", `Stage: ${stage}\n${message}${detai
 ```
 
 Line 907 - update dialog:
+
 ```typescript
 // Before:
 message: `T3 Code ${updateState.currentVersion} is currently the newest version available.`,
@@ -319,6 +326,7 @@ EOF
 ### Task 7: Rebrand web UI
 
 **Files:**
+
 - Modify: `apps/web/index.html:89,94,95`
 - Modify: `apps/web/src/components/SplashScreen.tsx:4,5`
 
@@ -327,16 +335,19 @@ EOF
 In `apps/web/index.html`:
 
 Line 89 - page title:
+
 ```html
 <title>BCode (Alpha)</title>
 ```
 
 Line 94 - boot shell aria-label:
+
 ```html
-<div id="boot-shell-card" aria-label="BCode splash screen">
+<div id="boot-shell-card" aria-label="BCode splash screen"></div>
 ```
 
 Line 95 - boot shell logo alt:
+
 ```html
 <img id="boot-shell-logo" src="/apple-touch-icon.png" alt="BCode" />
 ```
@@ -346,11 +357,13 @@ Line 95 - boot shell logo alt:
 In `apps/web/src/components/SplashScreen.tsx`:
 
 Line 4:
+
 ```tsx
 <div className="flex size-24 items-center justify-center" aria-label="BCode splash screen">
 ```
 
 Line 5:
+
 ```tsx
 <img alt="BCode" className="size-16 object-contain" src="/apple-touch-icon.png" />
 ```
@@ -368,6 +381,7 @@ EOF
 ### Task 8: Rebrand CI/release workflow and documentation
 
 **Files:**
+
 - Modify: `.github/workflows/release.yml:106`
 - Modify: `README.md`
 - Modify: `AGENTS.md`
@@ -388,16 +402,19 @@ echo "name=BCode v$version" >> "$GITHUB_OUTPUT"
 Replace all user-facing "T3 Code" references with "BCode". Keep technical references (like `t3code` package names, `npx t3` commands) as-is since those are internal identifiers we're not changing yet.
 
 Line 1:
+
 ```markdown
 # BCode
 ```
 
 Line 3:
+
 ```markdown
 BCode is a minimal web GUI for coding agents (currently Claude and Codex, more coming soon).
 ```
 
 Line 8 (note Claude listed first now):
+
 ```markdown
 > BCode currently supports Claude and Codex.
 ```
@@ -405,11 +422,13 @@ Line 8 (note Claude listed first now):
 - [ ] **Step 3: Update AGENTS.md**
 
 Line 10:
+
 ```markdown
 BCode is a minimal web GUI for using coding agents like Claude and Codex.
 ```
 
 Line 35:
+
 ```markdown
 BCode is currently Claude-first. The server manages provider sessions (Claude agent SDK and Codex app-server via JSON-RPC over stdio), then streams structured events to the browser through WebSocket push messages.
 ```
@@ -439,6 +458,7 @@ Expected: Build succeeds. The rebrand only touches strings, not logic.
 ### Task 9: Swap default provider to Claude
 
 **Files:**
+
 - Modify: `packages/contracts/src/orchestration.ts:44`
 - Modify: `packages/contracts/src/model.ts:59`
 - Modify: `apps/web/src/modelSelection.ts:175-178`
@@ -534,6 +554,7 @@ bun run --filter=@t3tools/desktop dev
 ```
 
 Verify:
+
 - Window title shows "BCode (Dev)" not "T3 Code (Dev)"
 - Error dialogs (if triggered) show "BCode"
 - About/update dialogs show "BCode"
@@ -545,12 +566,14 @@ bun run --filter=@t3tools/web dev
 ```
 
 Verify:
+
 - Browser tab title shows "BCode (Dev)"
 - Splash screen aria-label and alt text say "BCode"
 
 - [ ] **Step 5: Verify Claude is default provider**
 
 In the web UI:
+
 - Open provider/model picker
 - Confirm Claude (claude-sonnet-4-6) is selected by default
 - Confirm Codex is still available and selectable

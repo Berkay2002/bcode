@@ -522,9 +522,7 @@ const make = Effect.gen(function* () {
 
   const ensurePreTurnBaselineFromDomainTurnStart = Effect.fn(
     "ensurePreTurnBaselineFromDomainTurnStart",
-  )(function* (
-    event: Extract<OrchestrationEvent, { type: "thread.turn-start-requested" }>,
-  ) {
+  )(function* (event: Extract<OrchestrationEvent, { type: "thread.turn-start-requested" }>) {
     const threadId = event.payload.threadId;
     const readModel = yield* orchestrationEngine.getReadModel();
     const thread = readModel.threads.find((entry) => entry.id === threadId);
