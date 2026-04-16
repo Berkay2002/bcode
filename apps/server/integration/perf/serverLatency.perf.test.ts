@@ -779,7 +779,7 @@ describe("server perf latency", () => {
           iterations: GIT_RPC_SAMPLE_COUNT,
           execute: () =>
             harness!.rpc.request((client) =>
-              client[WS_METHODS.gitStatus]({
+              client[WS_METHODS.gitRefreshStatus]({
                 cwd: harness!.seededState.workspaceRoot,
               }),
             ),
@@ -855,7 +855,7 @@ describe("server perf latency", () => {
           iterations: GIT_RPC_SAMPLE_COUNT,
           execute: () =>
             harness!.rpc.request((client) =>
-              client[WS_METHODS.gitStatus]({
+              client[WS_METHODS.gitRefreshStatus]({
                 cwd: harness!.seededState.workspaceRoot,
               }),
             ),
