@@ -399,7 +399,7 @@ export const checkCodexProviderStatus = Effect.fn("checkCodexProviderStatus")(fu
       enabled: codexSettings.enabled,
       checkedAt,
       models: input.models ?? models,
-      skills: input.skills,
+      ...(input.skills ? { skills: input.skills } : {}),
       probe: input.probe,
       ...(input.usageLimits ? { usageLimits: input.usageLimits } : {}),
     });

@@ -167,6 +167,8 @@ function buildRuntimeEvent(input: {
 export const makePerfProviderAdapter = Effect.gen(function* () {
   const runtimeEvents = yield* Queue.unbounded<ProviderRuntimeEvent>();
   const sessions = new Map<ThreadId, PerfSessionState>();
+  const context = yield* Effect.context<never>();
+  const runFork = Effect.runForkWith(context);
 
   const clearPendingTimers = (threadId: ThreadId) =>
     Effect.sync(() => {
@@ -189,7 +191,7 @@ export const makePerfProviderAdapter = Effect.gen(function* () {
     Effect.sync(() => {
       const timer = setTimeout(() => {
         input.state.pendingTimers.delete(timer);
-        Effect.runFork(
+        runFork(
           Queue.offer(runtimeEvents, input.event).pipe(
             Effect.tap(() => Effect.sync(() => input.onAfterEmit?.())),
             Effect.asVoid,
@@ -245,7 +247,7 @@ export const makePerfProviderAdapter = Effect.gen(function* () {
     Effect.gen(function* () {
       const state = sessions.get(input.threadId);
       if (!state) {
-        return yield* Effect.fail(sessionNotFound(input.threadId));
+        return yield* sessionNotFound(input.threadId);
       }
 
       yield* clearPendingTimers(input.threadId);
@@ -343,7 +345,7 @@ export const makePerfProviderAdapter = Effect.gen(function* () {
     Effect.gen(function* () {
       const state = sessions.get(threadId);
       if (!state) {
-        return yield* Effect.fail(sessionNotFound(threadId));
+        return yield* sessionNotFound(threadId);
       }
       yield* clearPendingTimers(threadId);
       const interruptedTurnId = turnId ?? state.session.activeTurnId;
@@ -380,11 +382,16 @@ export const makePerfProviderAdapter = Effect.gen(function* () {
   const stopSession: ProviderAdapterShape<ProviderAdapterError>["stopSession"] = (threadId) =>
     Effect.gen(function* () {
       if (!sessions.has(threadId)) {
-        return yield* Effect.fail(sessionNotFound(threadId));
+        return yield* sessionNotFound(threadId);
       }
       yield* clearPendingTimers(threadId);
       sessions.delete(threadId);
     });
+
+  const compactThread: ProviderAdapterShape<ProviderAdapterError>["compactThread"] = (threadId) =>
+    sessions.has(threadId)
+      ? Effect.succeed<string | null>(null)
+      : Effect.fail(sessionNotFound(threadId));
 
   const listSessions: ProviderAdapterShape<ProviderAdapterError>["listSessions"] = () =>
     Effect.sync(() => Array.from(sessions.values(), (state) => state.session));
@@ -404,7 +411,7 @@ export const makePerfProviderAdapter = Effect.gen(function* () {
     Effect.gen(function* () {
       const state = sessions.get(threadId);
       if (!state) {
-        return yield* Effect.fail(sessionNotFound(threadId));
+        return yield* sessionNotFound(threadId);
       }
       if (!Number.isInteger(numTurns) || numTurns < 0 || numTurns > state.snapshot.turns.length) {
         return yield* new ProviderAdapterValidationError({
@@ -444,6 +451,7 @@ export const makePerfProviderAdapter = Effect.gen(function* () {
     respondToRequest,
     respondToUserInput,
     stopSession,
+    compactThread,
     listSessions,
     hasSession,
     readThread,

@@ -23,7 +23,7 @@ export const PerfProviderLayerLive = Layer.unwrap(
 
     return makeProviderServiceLive().pipe(
       Layer.provide(adapterRegistryLayer),
-      Layer.provide(providerSessionDirectoryLayer),
+      Layer.provideMerge(providerSessionDirectoryLayer),
     );
   }),
 );
