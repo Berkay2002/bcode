@@ -80,7 +80,8 @@ import {
 
 const PtyAdapterLive = Layer.unwrap(
   Effect.gen(function* () {
-    if (typeof Bun !== "undefined") {
+    // Bun PTY is unavailable on Windows — always use node-pty there.
+    if (typeof Bun !== "undefined" && process.platform !== "win32") {
       const BunPTY = yield* Effect.promise(() => import("./terminal/Layers/BunPTY"));
       return BunPTY.layer;
     } else {
@@ -180,9 +181,8 @@ const SelectedProviderRegistryLayerLive = isPerfProviderEnabled()
   ? PerfProviderRegistryLive
   : ProviderRegistryLive;
 
-const PersistenceLayerLive = Layer.empty.pipe(
+const PersistenceLayerLive = ProviderUsageLimitsRepositoryLive.pipe(
   Layer.provideMerge(SqlitePersistenceLayerLive),
-  Layer.provideMerge(ProviderUsageLimitsRepositoryLive),
 );
 
 const GitManagerLayerLive = GitManagerLive.pipe(

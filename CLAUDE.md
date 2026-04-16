@@ -43,6 +43,7 @@ This project uses Superpowers skills for structured development. See `.claude/ru
 ## Git Conventions
 
 Commit messages use conventional commits, lowercase after prefix:
+
 - Format: `type: description` (e.g., `fix: resolve session leak on reconnect`)
 - Types: `feat`, `fix`, `chore`, `perf`, `test`, `docs`, `refactor`
 - PR squash-merges get the PR number appended automatically: `fix: resolve session leak (#42)`

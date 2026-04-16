@@ -25,3 +25,4 @@ squashfs-root/
 artifacts/
 CLAUDE.local.md
 .claude/settings.local.json
+scheduled_tasks.lock
