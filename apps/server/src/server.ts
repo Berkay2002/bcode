@@ -180,7 +180,10 @@ const SelectedProviderRegistryLayerLive = isPerfProviderEnabled()
   ? PerfProviderRegistryLive
   : ProviderRegistryLive;
 
-const PersistenceLayerLive = Layer.empty.pipe(Layer.provideMerge(SqlitePersistenceLayerLive));
+const PersistenceLayerLive = Layer.empty.pipe(
+  Layer.provideMerge(SqlitePersistenceLayerLive),
+  Layer.provideMerge(ProviderUsageLimitsRepositoryLive),
+);
 
 const GitManagerLayerLive = GitManagerLive.pipe(
   Layer.provideMerge(ProjectSetupScriptRunnerLive),

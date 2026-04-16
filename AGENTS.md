@@ -7,9 +7,9 @@
 
 ## Project Snapshot
 
-BCode is a minimal web GUI for using coding agents like Claude and Codex.
+BCode is a minimal web GUI for using coding agents. Claude is the default and primary provider; Codex remains fully supported as a secondary option.
 
-This repository is a VERY EARLY WIP. Proposing sweeping changes that improve long-term maintainability is encouraged.
+This is a fork of T3 Code (pingdotgg/t3code). Internal identifiers (package scopes `@t3tools/*`, env vars, protocol names) are kept unchanged for upstream compatibility. Only user-facing strings use the "BCode" brand.
 
 ## Core Priorities
 
@@ -25,29 +25,29 @@ Long term maintainability is a core priority. If you add new functionality, firs
 
 ## Package Roles
 
-- `apps/server`: Node.js WebSocket server. Wraps Codex app-server (JSON-RPC over stdio), serves the React web app, and manages provider sessions.
+- `apps/server`: Node.js WebSocket server. Manages provider sessions for Claude (via agent SDK) and Codex (via JSON-RPC over stdio app-server), serves the React web app, and streams structured events to the browser through WebSocket push.
 - `apps/web`: React/Vite UI. Owns session UX, conversation/event rendering, and client-side state. Connects to the server via WebSocket.
 - `packages/contracts`: Shared effect/Schema schemas and TypeScript contracts for provider events, WebSocket protocol, and model/session types. Keep this package schema-only — no runtime logic.
 - `packages/shared`: Shared runtime utilities consumed by both server and web. Uses explicit subpath exports (e.g. `@t3tools/shared/git`) — no barrel index.
 
-## Codex App Server (Important)
+## Provider Architecture
 
-BCode is currently Claude-first. The server manages provider sessions (Claude agent SDK and Codex app-server via JSON-RPC over stdio), then streams structured events to the browser through WebSocket push messages.
+BCode is Claude-first. The default provider is `claudeAgent` (configured in `packages/contracts/src/orchestration.ts`). Codex is available via the provider picker in the UI.
 
-How we use it in this codebase:
+- Claude sessions use the Anthropic Claude Agent SDK (`@anthropic-ai/claude-agent-sdk`).
+- Codex sessions use the Codex app-server (JSON-RPC over stdio).
+- Provider adapters live in `apps/server/src/provider/Layers/` (ClaudeAdapter, CodexAdapter).
+- Provider registry and service orchestration in `apps/server/src/provider/Layers/ProviderRegistry.ts` and `ProviderService.ts`.
 
-- Session startup/resume and turn lifecycle are brokered in `apps/server/src/codexAppServerManager.ts`.
-- Provider dispatch and thread event logging are coordinated in `apps/server/src/providerManager.ts`.
-- WebSocket server routes NativeApi methods in `apps/server/src/wsServer.ts`.
-- Web app consumes orchestration domain events via WebSocket push on channel `orchestration.domainEvent` (provider runtime activity is projected into orchestration events server-side).
+## Key Server Paths
 
-Docs:
-
-- Codex App Server docs: https://developers.openai.com/codex/sdk/#app-server
+- Provider dispatch and thread event logging: `apps/server/src/provider/Layers/ProviderService.ts`
+- WebSocket server routes: `apps/server/src/ws.ts`
+- Orchestration engine: `apps/server/src/orchestration/Layers/OrchestrationEngine.ts`
+- Web app consumes orchestration domain events via WebSocket push on channel `orchestration.domainEvent`.
 
 ## Reference Repos
 
+- Upstream T3 Code: https://github.com/pingdotgg/t3code
 - Open-source Codex repo: https://github.com/openai/codex
-- Codex-Monitor (Tauri, feature-complete, strong reference implementation): https://github.com/Dimillian/CodexMonitor
-
-Use these as implementation references when designing protocol handling, UX flows, and operational safeguards.
+- Codex App Server docs: https://developers.openai.com/codex/sdk/#app-server
