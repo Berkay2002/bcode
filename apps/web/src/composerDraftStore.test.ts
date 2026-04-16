@@ -125,6 +125,8 @@ const TEST_PROVIDERS: ServerProvider[] = [
       { slug: "gpt-5.4", name: "GPT-5.4", isCustom: false, capabilities: null },
       { slug: "gpt-5.4-mini", name: "GPT-5.4 Mini", isCustom: false, capabilities: null },
     ],
+    slashCommands: [],
+    skills: [],
   },
   {
     provider: "claudeAgent",
@@ -134,6 +136,8 @@ const TEST_PROVIDERS: ServerProvider[] = [
     status: "ready",
     auth: { status: "authenticated" },
     checkedAt: "2026-04-10T00:00:00.000Z",
+    slashCommands: [],
+    skills: [],
     models: [
       {
         slug: "claude-opus-4-6",

@@ -164,11 +164,7 @@ describe("MessagesTimeline", () => {
     const { MessagesTimeline } = await import("./MessagesTimeline");
     const markup = renderToStaticMarkup(
       <MessagesTimeline
-        hasMessages
-        isWorking={false}
-        activeTurnInProgress={false}
-        activeTurnStartedAt={null}
-        scrollContainer={null}
+        {...buildProps()}
         timelineEntries={[
           {
             id: "entry-1",
@@ -187,24 +183,6 @@ describe("MessagesTimeline", () => {
             },
           },
         ]}
-        completionDividerBeforeEntryId={null}
-        completionSummary={null}
-        turnDiffSummaryByAssistantMessageId={new Map()}
-        nowIso="2026-03-17T19:12:30.000Z"
-        expandedWorkGroups={{}}
-        onToggleWorkGroup={() => {}}
-        changedFilesExpandedByTurnId={{}}
-        onSetChangedFilesExpanded={() => {}}
-        onOpenTurnDiff={() => {}}
-        revertTurnCountByUserMessageId={new Map()}
-        onRevertUserMessage={() => {}}
-        isRevertingCheckpoint={false}
-        onImageExpand={() => {}}
-        activeThreadEnvironmentId={ACTIVE_THREAD_ENVIRONMENT_ID}
-        markdownCwd={undefined}
-        resolvedTheme="light"
-        timestampFormat="locale"
-        workspaceRoot={undefined}
       />,
     );
 
