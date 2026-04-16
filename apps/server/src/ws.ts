@@ -1044,6 +1044,12 @@ const makeWsRpcLayer = (currentSessionId: AuthSessionId) =>
             }),
             { "rpc.aggregate": "auth" },
           ),
+        [WS_METHODS.subscribeOrchestrationDomainEvents]: (_input) =>
+          observeRpcStream(
+            WS_METHODS.subscribeOrchestrationDomainEvents,
+            orchestrationEngine.streamDomainEvents,
+            { "rpc.aggregate": "orchestration" },
+          ),
       });
     }),
   );

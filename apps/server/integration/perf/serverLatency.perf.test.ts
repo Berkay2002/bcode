@@ -774,12 +774,12 @@ describe("server perf latency", () => {
       const gitLatencyIdle = await Promise.all([
         measureRpcLatencySeries({
           harness,
-          name: "git.status",
+          name: "git.refreshStatus",
           loadProfile: "idle-repo-pressure",
           iterations: GIT_RPC_SAMPLE_COUNT,
           execute: () =>
             harness!.rpc.request((client) =>
-              client[WS_METHODS.gitStatus]({
+              client[WS_METHODS.gitRefreshStatus]({
                 cwd: harness!.seededState.workspaceRoot,
               }),
             ),
@@ -850,12 +850,12 @@ describe("server perf latency", () => {
       const gitLatencyMixed = await Promise.all([
         measureRpcLatencySeries({
           harness,
-          name: "git.status",
+          name: "git.refreshStatus",
           loadProfile: "mixed-stream-terminal-git",
           iterations: GIT_RPC_SAMPLE_COUNT,
           execute: () =>
             harness!.rpc.request((client) =>
-              client[WS_METHODS.gitStatus]({
+              client[WS_METHODS.gitRefreshStatus]({
                 cwd: harness!.seededState.workspaceRoot,
               }),
             ),
