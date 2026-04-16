@@ -57,7 +57,7 @@ const BUILT_IN_MODELS: ReadonlyArray<ServerProviderModel> = [
         { value: "max", label: "Max" },
         { value: "ultrathink", label: "Ultrathink" },
       ],
-      supportsFastMode: true,
+      supportsFastMode: false,
       supportsThinkingToggle: false,
       contextWindowOptions: [
         { value: "200k", label: "200k", isDefault: true },
