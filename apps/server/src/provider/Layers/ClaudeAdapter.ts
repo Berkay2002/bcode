@@ -41,7 +41,7 @@ import {
   ThreadId,
   TurnId,
   type UserInputQuestion,
-  ClaudeCodeEffort,
+  ClaudeAgentEffort,
   RuntimeMode,
 } from "@t3tools/contracts";
 import {
@@ -221,9 +221,9 @@ function isSyntheticClaudeThreadId(value: string): boolean {
   return value.startsWith("claude-thread-");
 }
 
-function getEffectiveClaudeCodeEffort(
-  effort: ClaudeCodeEffort | null | undefined,
-): Exclude<ClaudeCodeEffort, "ultrathink"> | null {
+function getEffectiveClaudeAgentEffort(
+  effort: ClaudeAgentEffort | null | undefined,
+): Exclude<ClaudeAgentEffort, "ultrathink"> | null {
   if (!effort) {
     return null;
   }
@@ -291,7 +291,7 @@ function maxClaudeContextWindowFromModelUsage(
 }
 
 function normalizeClaudeTokenUsage(
-  value: Record<string, unknown> | undefined,
+  value: unknown,
   contextWindow?: number,
 ): ThreadTokenUsageSnapshot | undefined {
   if (!value || typeof value !== "object") {
@@ -2928,13 +2928,13 @@ const makeClaudeAdapter = Effect.fn("makeClaudeAdapter")(function* (
       const caps = getClaudeModelCapabilities(modelSelection?.model);
       const apiModelId = modelSelection ? resolveApiModelId(modelSelection) : undefined;
       const effort = (resolveEffort(caps, modelSelection?.options?.effort) ??
-        null) as ClaudeCodeEffort | null;
+        null) as ClaudeAgentEffort | null;
       const fastMode = modelSelection?.options?.fastMode === true && caps.supportsFastMode;
       const thinking =
         typeof modelSelection?.options?.thinking === "boolean" && caps.supportsThinkingToggle
           ? modelSelection.options.thinking
           : undefined;
-      const effectiveEffort = getEffectiveClaudeCodeEffort(effort);
+      const effectiveEffort = getEffectiveClaudeAgentEffort(effort);
       const runtimeModeToPermission: Record<RuntimeMode, PermissionMode> = {
         "approval-required": "default",
         "auto-accept-edits": "acceptEdits",

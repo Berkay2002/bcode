@@ -1,8 +1,8 @@
-import type { ClaudeCodeEffort } from "@t3tools/contracts";
+import type { ClaudeAgentEffort } from "@t3tools/contracts";
 
 export type ClaudeTierDefault = {
   readonly model: string;
-  readonly effort: ClaudeCodeEffort;
+  readonly effort: ClaudeAgentEffort;
 };
 
 const MAX_TIER_DEFAULT: ClaudeTierDefault = {
