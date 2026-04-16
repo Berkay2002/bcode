@@ -171,15 +171,15 @@ function runGit(cwd: string, args: ReadonlyArray<string>) {
 }
 
 function makeControlThreadId(label: string): ThreadIdType {
-  return ThreadId.makeUnsafe(`perf-control-${label}-${crypto.randomUUID()}`);
+  return ThreadId.make(`perf-control-${label}-${crypto.randomUUID()}`);
 }
 
 function makeCommandId(label: string) {
-  return CommandId.makeUnsafe(`perf-command:${label}:${crypto.randomUUID()}`);
+  return CommandId.make(`perf-command:${label}:${crypto.randomUUID()}`);
 }
 
 function makeMessageId(label: string) {
-  return MessageId.makeUnsafe(`perf-message:${label}:${crypto.randomUUID()}`);
+  return MessageId.make(`perf-message:${label}:${crypto.randomUUID()}`);
 }
 
 async function dispatchCommand(harness: ServerPerfHarness, command: ClientOrchestrationCommand) {

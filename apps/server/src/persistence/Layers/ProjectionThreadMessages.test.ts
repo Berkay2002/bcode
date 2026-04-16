@@ -114,8 +114,8 @@ layer("ProjectionThreadMessageRepository", (it) => {
   it.effect("looks up a projected message by id", () =>
     Effect.gen(function* () {
       const repository = yield* ProjectionThreadMessageRepository;
-      const threadId = ThreadId.makeUnsafe("thread-get-by-message-id");
-      const messageId = MessageId.makeUnsafe("message-get-by-message-id");
+      const threadId = ThreadId.make("thread-get-by-message-id");
+      const messageId = MessageId.make("message-get-by-message-id");
       const createdAt = "2026-02-28T19:20:00.000Z";
       const updatedAt = "2026-02-28T19:20:01.000Z";
 
@@ -144,8 +144,8 @@ layer("ProjectionThreadMessageRepository", (it) => {
   it.effect("appends streaming deltas without losing createdAt or attachments", () =>
     Effect.gen(function* () {
       const repository = yield* ProjectionThreadMessageRepository;
-      const threadId = ThreadId.makeUnsafe("thread-append-delta");
-      const messageId = MessageId.makeUnsafe("message-append-delta");
+      const threadId = ThreadId.make("thread-append-delta");
+      const messageId = MessageId.make("message-append-delta");
       const createdAt = "2026-02-28T19:30:00.000Z";
       const persistedAttachments = [
         {

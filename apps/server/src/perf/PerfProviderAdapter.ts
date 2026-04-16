@@ -129,13 +129,13 @@ function buildRuntimeEvent(input: {
       ? input.turnId
       : input.runIndex === 1
         ? input.template.turnId
-        : TurnId.makeUnsafe(
+        : TurnId.make(
             namespacePerfFixtureId(String(input.template.turnId), input.threadId, input.runIndex),
           );
   const createdAt = new Date(input.startedAtMs + (input.template.delayMs ?? 0)).toISOString();
   return {
     type: input.template.type,
-    eventId: EventId.makeUnsafe(
+    eventId: EventId.make(
       `perf-runtime:${String(eventThreadId)}:${String(eventTurnId)}:${input.index.toString().padStart(4, "0")}`,
     ),
     provider: "codex",
@@ -144,7 +144,7 @@ function buildRuntimeEvent(input: {
     createdAt,
     ...(input.template.itemId
       ? {
-          itemId: RuntimeItemId.makeUnsafe(
+          itemId: RuntimeItemId.make(
             input.runIndex === 1
               ? input.template.itemId
               : namespacePerfFixtureId(input.template.itemId, input.threadId, input.runIndex),
@@ -153,7 +153,7 @@ function buildRuntimeEvent(input: {
       : {}),
     ...(input.template.requestId
       ? {
-          requestId: RuntimeRequestId.makeUnsafe(
+          requestId: RuntimeRequestId.make(
             input.runIndex === 1
               ? input.template.requestId
               : namespacePerfFixtureId(input.template.requestId, input.threadId, input.runIndex),
@@ -221,7 +221,7 @@ export const makePerfProviderAdapter = Effect.gen(function* () {
         ...(input.modelSelection?.model ? { model: input.modelSelection.model } : {}),
         resumeCursor:
           input.resumeCursor ??
-          RuntimeSessionId.makeUnsafe(`perf-resume:${String(input.threadId)}:${Date.now()}`),
+          RuntimeSessionId.make(`perf-resume:${String(input.threadId)}:${Date.now()}`),
         createdAt,
         updatedAt: createdAt,
       };
@@ -251,7 +251,7 @@ export const makePerfProviderAdapter = Effect.gen(function* () {
       yield* clearPendingTimers(input.threadId);
 
       state.turnCount += 1;
-      const turnId = TurnId.makeUnsafe(
+      const turnId = TurnId.make(
         `perf-turn:${String(input.threadId)}:${state.turnCount.toString().padStart(4, "0")}`,
       );
       const scenario = resolvePerfScenario(input.input);
@@ -351,7 +351,7 @@ export const makePerfProviderAdapter = Effect.gen(function* () {
       if (interruptedTurnId) {
         yield* Queue.offer(runtimeEvents, {
           type: "turn.completed",
-          eventId: EventId.makeUnsafe(
+          eventId: EventId.make(
             `perf-runtime:${String(threadId)}:${String(interruptedTurnId)}:interrupted`,
           ),
           provider: "codex",

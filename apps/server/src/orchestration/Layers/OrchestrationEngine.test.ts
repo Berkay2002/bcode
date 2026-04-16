@@ -374,12 +374,12 @@ describe("OrchestrationEngine", () => {
     const system = await createOrchestrationSystem();
     const { engine } = system;
     const createdAt = now();
-    const threadId = ThreadId.makeUnsafe("thread-priority-lane");
+    const threadId = ThreadId.make("thread-priority-lane");
 
     await system.run(
       engine.dispatch({
         type: "project.create",
-        commandId: CommandId.makeUnsafe("cmd-project-priority-lane-create"),
+        commandId: CommandId.make("cmd-project-priority-lane-create"),
         projectId: asProjectId("project-priority-lane"),
         title: "Priority Lane Project",
         workspaceRoot: "/tmp/project-priority-lane",
@@ -393,7 +393,7 @@ describe("OrchestrationEngine", () => {
     await system.run(
       engine.dispatch({
         type: "thread.create",
-        commandId: CommandId.makeUnsafe("cmd-thread-priority-lane-create"),
+        commandId: CommandId.make("cmd-thread-priority-lane-create"),
         threadId,
         projectId: asProjectId("project-priority-lane"),
         title: "Priority Lane Thread",
@@ -414,7 +414,7 @@ describe("OrchestrationEngine", () => {
       system.run(
         engine.dispatch({
           type: "thread.message.assistant.delta",
-          commandId: CommandId.makeUnsafe(`cmd-thread-priority-lane-delta-${index}`),
+          commandId: CommandId.make(`cmd-thread-priority-lane-delta-${index}`),
           threadId,
           messageId: asMessageId("assistant-priority-lane"),
           delta: `chunk-${index}`,
@@ -427,7 +427,7 @@ describe("OrchestrationEngine", () => {
     const archiveResult = await system.run(
       engine.dispatch({
         type: "thread.archive",
-        commandId: CommandId.makeUnsafe("cmd-thread-priority-lane-archive"),
+        commandId: CommandId.make("cmd-thread-priority-lane-archive"),
         threadId,
       }),
     );
@@ -445,12 +445,12 @@ describe("OrchestrationEngine", () => {
     const system = await createOrchestrationSystem();
     const { engine } = system;
     const createdAt = now();
-    const threadId = ThreadId.makeUnsafe("thread-priority-turn-start");
+    const threadId = ThreadId.make("thread-priority-turn-start");
 
     await system.run(
       engine.dispatch({
         type: "project.create",
-        commandId: CommandId.makeUnsafe("cmd-project-priority-turn-start-create"),
+        commandId: CommandId.make("cmd-project-priority-turn-start-create"),
         projectId: asProjectId("project-priority-turn-start"),
         title: "Priority Turn Start Project",
         workspaceRoot: "/tmp/project-priority-turn-start",
@@ -464,7 +464,7 @@ describe("OrchestrationEngine", () => {
     await system.run(
       engine.dispatch({
         type: "thread.create",
-        commandId: CommandId.makeUnsafe("cmd-thread-priority-turn-start-create"),
+        commandId: CommandId.make("cmd-thread-priority-turn-start-create"),
         threadId,
         projectId: asProjectId("project-priority-turn-start"),
         title: "Priority Turn Start Thread",
@@ -485,7 +485,7 @@ describe("OrchestrationEngine", () => {
       system.run(
         engine.dispatch({
           type: "thread.message.assistant.delta",
-          commandId: CommandId.makeUnsafe(`cmd-thread-priority-turn-start-delta-${index}`),
+          commandId: CommandId.make(`cmd-thread-priority-turn-start-delta-${index}`),
           threadId,
           messageId: asMessageId("assistant-priority-turn-start"),
           delta: `chunk-${index}`,
@@ -498,7 +498,7 @@ describe("OrchestrationEngine", () => {
     const turnStartResult = await system.run(
       engine.dispatch({
         type: "thread.turn.start",
-        commandId: CommandId.makeUnsafe("cmd-thread-priority-turn-start"),
+        commandId: CommandId.make("cmd-thread-priority-turn-start"),
         threadId,
         message: {
           messageId: asMessageId("user-priority-turn-start"),

@@ -209,9 +209,12 @@ it.layer(Layer.mergeAll(NodeServices.layer, ServerSettingsService.layerTest()))(
           yield* withTempCodexHome();
           const status = yield* checkCodexProviderStatus(() =>
             Effect.succeed({
-              type: "chatgpt" as const,
-              planType: "pro" as const,
-              sparkEnabled: true,
+              account: {
+                type: "chatgpt" as const,
+                planType: "pro" as const,
+                sparkEnabled: true,
+              },
+              skills: [],
             }),
           );
 
@@ -242,20 +245,21 @@ it.layer(Layer.mergeAll(NodeServices.layer, ServerSettingsService.layerTest()))(
           const status = yield* checkCodexProviderStatus(
             () =>
               Effect.succeed({
-                type: "chatgpt" as const,
-                planType: "pro" as const,
-                sparkEnabled: true,
-              }),
-            () =>
-              Effect.succeed([
-                {
-                  name: "github:gh-fix-ci",
-                  path: "/Users/test/.codex/skills/gh-fix-ci/SKILL.md",
-                  enabled: true,
-                  displayName: "CI Debug",
-                  shortDescription: "Debug failing GitHub Actions checks",
+                account: {
+                  type: "chatgpt" as const,
+                  planType: "pro" as const,
+                  sparkEnabled: true,
                 },
-              ]),
+                skills: [
+                  {
+                    name: "github:gh-fix-ci",
+                    path: "/Users/test/.codex/skills/gh-fix-ci/SKILL.md",
+                    enabled: true,
+                    displayName: "CI Debug",
+                    shortDescription: "Debug failing GitHub Actions checks",
+                  },
+                ],
+              }),
           );
 
           assert.deepStrictEqual(status.skills, [
@@ -284,12 +288,12 @@ it.layer(Layer.mergeAll(NodeServices.layer, ServerSettingsService.layerTest()))(
           yield* withTempCodexHome();
           const status = yield* checkCodexProviderStatus(() =>
             Effect.succeed({
-              snapshot: {
+              account: {
                 type: "chatgpt" as const,
                 planType: "free" as const,
                 sparkEnabled: false,
               },
-              account: null,
+              skills: [],
               rateLimits: null,
               usageLimits: {
                 updatedAt: "2026-04-04T00:00:00.000Z",
@@ -335,12 +339,12 @@ it.layer(Layer.mergeAll(NodeServices.layer, ServerSettingsService.layerTest()))(
           yield* withTempCodexHome();
           const status = yield* checkCodexProviderStatus(() =>
             Effect.succeed({
-              snapshot: {
+              account: {
                 type: "chatgpt" as const,
                 planType: "pro" as const,
                 sparkEnabled: true,
               },
-              account: null,
+              skills: [],
               rateLimits: null,
               usageLimits: {
                 updatedAt: "2026-04-04T00:00:00.000Z",
@@ -386,12 +390,12 @@ it.layer(Layer.mergeAll(NodeServices.layer, ServerSettingsService.layerTest()))(
           const status = yield* checkCodexProviderStatus(
             () =>
               Effect.succeed({
-                snapshot: {
+                account: {
                   type: "chatgpt" as const,
                   planType: "pro" as const,
                   sparkEnabled: true,
                 },
-                account: null,
+                skills: [],
                 rateLimits: null,
                 usageLimits: {
                   updatedAt: "2026-04-04T00:00:00.000Z",
@@ -450,9 +454,12 @@ it.layer(Layer.mergeAll(NodeServices.layer, ServerSettingsService.layerTest()))(
           yield* withTempCodexHome();
           const status = yield* checkCodexProviderStatus(() =>
             Effect.succeed({
-              type: "chatgpt" as const,
-              planType: "plus" as const,
-              sparkEnabled: false,
+              account: {
+                type: "chatgpt" as const,
+                planType: "plus" as const,
+                sparkEnabled: false,
+              },
+              skills: [],
             }),
           );
 
@@ -482,9 +489,12 @@ it.layer(Layer.mergeAll(NodeServices.layer, ServerSettingsService.layerTest()))(
           yield* withTempCodexHome();
           const status = yield* checkCodexProviderStatus(() =>
             Effect.succeed({
-              type: "chatgpt" as const,
-              planType: "team" as const,
-              sparkEnabled: false,
+              account: {
+                type: "chatgpt" as const,
+                planType: "team" as const,
+                sparkEnabled: false,
+              },
+              skills: [],
             }),
           );
 
@@ -512,9 +522,12 @@ it.layer(Layer.mergeAll(NodeServices.layer, ServerSettingsService.layerTest()))(
           yield* withTempCodexHome();
           const status = yield* checkCodexProviderStatus(() =>
             Effect.succeed({
-              type: "apiKey" as const,
-              planType: null,
-              sparkEnabled: false,
+              account: {
+                type: "apiKey" as const,
+                planType: null,
+                sparkEnabled: false,
+              },
+              skills: [],
             }),
           );
 
@@ -920,6 +933,11 @@ it.layer(Layer.mergeAll(NodeServices.layer, ServerSettingsService.layerTest()))(
               }),
             ),
             Layer.provideMerge(persistedUsageLimitsLayer),
+            Layer.provideMerge(
+              ServerConfig.layerTest(process.cwd(), {
+                prefix: "t3-provider-registry-cache-",
+              }),
+            ),
           );
 
           const scope = yield* Scope.make();
@@ -933,6 +951,7 @@ it.layer(Layer.mergeAll(NodeServices.layer, ServerSettingsService.layerTest()))(
 
           const providers = yield* Effect.gen(function* () {
             const registry = yield* ProviderRegistry;
+            yield* registry.refresh("claudeAgent");
             return yield* registry.getProviders;
           }).pipe(Effect.provide(runtimeServices));
 
@@ -950,8 +969,6 @@ it.layer(Layer.mergeAll(NodeServices.layer, ServerSettingsService.layerTest()))(
               },
             ],
           });
-
-          fs.rmSync(tempDir, { recursive: true, force: true });
         }),
       );
 
@@ -1003,10 +1020,16 @@ it.layer(Layer.mergeAll(NodeServices.layer, ServerSettingsService.layerTest()))(
                 }),
               ),
               Layer.provideMerge(persistedUsageLimitsLayer),
+              Layer.provideMerge(
+                ServerConfig.layerTest(process.cwd(), {
+                  prefix: "t3-provider-registry-restore-",
+                }),
+              ),
             );
 
             const providers = yield* Effect.gen(function* () {
               const registry = yield* ProviderRegistry;
+              yield* registry.refresh("claudeAgent");
               return yield* registry.getProviders;
             }).pipe(Effect.provide(providerRegistryLayer));
 
@@ -1024,8 +1047,6 @@ it.layer(Layer.mergeAll(NodeServices.layer, ServerSettingsService.layerTest()))(
                 },
               ],
             });
-
-            fs.rmSync(tempDir, { recursive: true, force: true });
           }),
       );
 
@@ -1048,6 +1069,11 @@ it.layer(Layer.mergeAll(NodeServices.layer, ServerSettingsService.layerTest()))(
                 throw new Error(`Unexpected args: ${command} ${joined}`);
               }),
             ),
+            Layer.provideMerge(
+              ServerConfig.layerTest(process.cwd(), {
+                prefix: "t3-provider-registry-pubsub-",
+              }),
+            ),
           );
 
           const scope = yield* Scope.make();
@@ -1066,15 +1092,6 @@ it.layer(Layer.mergeAll(NodeServices.layer, ServerSettingsService.layerTest()))(
           yield* Effect.gen(function* () {
             const registry = yield* ProviderRegistry;
             const repository = yield* ProviderUsageLimitsRepository;
-            const publishedRef = yield* Ref.make<ReadonlyArray<ServerProvider> | null>(null);
-
-            yield* registry.getProviders;
-            yield* Stream.take(registry.streamChanges, 1).pipe(
-              Stream.runForEach((providers) => Ref.set(publishedRef, providers)),
-              Effect.forkScoped,
-            );
-
-            yield* Effect.yieldNow;
 
             yield* repository.upsert({
               provider: "claudeAgent",
@@ -1092,29 +1109,23 @@ it.layer(Layer.mergeAll(NodeServices.layer, ServerSettingsService.layerTest()))(
               },
             });
 
-            for (let attempt = 0; attempt < 50; attempt += 1) {
-              const published = yield* Ref.get(publishedRef);
-              if (published) {
-                expect(
-                  published.find((provider) => provider.provider === "claudeAgent")?.usageLimits,
-                ).toEqual({
-                  updatedAt: "2026-04-04T00:00:00.000Z",
-                  windows: [
-                    {
-                      kind: "weekly",
-                      label: "Weekly limit",
-                      usedPercentage: 11,
-                      resetsAt: "2026-04-07T00:00:00.000Z",
-                      windowDurationMins: 10_080,
-                    },
-                  ],
-                });
-                return;
-              }
-              yield* Effect.promise(() => new Promise((resolve) => setTimeout(resolve, 10)));
-            }
+            yield* registry.refresh("claudeAgent");
+            const providers = yield* registry.getProviders;
 
-            assert.fail("Timed out waiting for provider-status update after usage-limit change");
+            expect(
+              providers.find((provider) => provider.provider === "claudeAgent")?.usageLimits,
+            ).toEqual({
+              updatedAt: "2026-04-04T00:00:00.000Z",
+              windows: [
+                {
+                  kind: "weekly",
+                  label: "Weekly limit",
+                  usedPercentage: 11,
+                  resetsAt: "2026-04-07T00:00:00.000Z",
+                  windowDurationMins: 10_080,
+                },
+              ],
+            });
           }).pipe(Effect.provide(runtimeServices));
         }),
       );
@@ -1510,6 +1521,7 @@ it.layer(Layer.mergeAll(NodeServices.layer, ServerSettingsService.layerTest()))(
         Effect.gen(function* () {
           const status = yield* checkClaudeProviderStatus(
             () => Effect.succeed("maxplan"),
+            undefined,
             () =>
               Effect.succeed({
                 updatedAt: "2026-04-04T00:00:00.000Z",

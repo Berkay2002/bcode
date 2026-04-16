@@ -33,6 +33,7 @@ import { ProjectionSnapshotQuery } from "../../src/orchestration/Services/Projec
 import { OrchestrationEventStoreLive } from "../../src/persistence/Layers/OrchestrationEventStore.ts";
 import { layerConfig as SqlitePersistenceLayerLive } from "../../src/persistence/Layers/Sqlite.ts";
 import { OrchestrationEventStore } from "../../src/persistence/Services/OrchestrationEventStore.ts";
+import { RepositoryIdentityResolverLive } from "../../src/project/Layers/RepositoryIdentityResolver.ts";
 import { ServerSettingsService, ServerSettingsLive } from "../../src/serverSettings.ts";
 
 export interface PerfSeededState {
@@ -72,7 +73,7 @@ function plusMs(baseTimeMs: number, offsetMs: number): string {
 }
 
 function makeCommandId(prefix: string, threadId: string, turnIndex: number): CommandId {
-  return CommandId.makeUnsafe(`${prefix}:${threadId}:${turnIndex.toString().padStart(4, "0")}`);
+  return CommandId.make(`${prefix}:${threadId}:${turnIndex.toString().padStart(4, "0")}`);
 }
 
 function buildProjectEvent(
@@ -82,13 +83,13 @@ function buildProjectEvent(
 ): Omit<OrchestrationEvent, "sequence"> {
   return {
     type: "project.created",
-    eventId: EventId.makeUnsafe(`perf-project-created:${String(project.id)}`),
+    eventId: EventId.make(`perf-project-created:${String(project.id)}`),
     aggregateKind: "project",
     aggregateId: project.id,
     occurredAt: createdAt,
-    commandId: CommandId.makeUnsafe(`perf-project-create:${String(project.id)}`),
+    commandId: CommandId.make(`perf-project-create:${String(project.id)}`),
     causationEventId: null,
-    correlationId: CommandId.makeUnsafe(`perf-project-create:${String(project.id)}`),
+    correlationId: CommandId.make(`perf-project-create:${String(project.id)}`),
     metadata: {},
     payload: {
       projectId: project.id,
@@ -109,13 +110,13 @@ function buildThreadCreatedEvent(
 ): Omit<OrchestrationEvent, "sequence"> {
   return {
     type: "thread.created",
-    eventId: EventId.makeUnsafe(`perf-thread-created:${String(thread.id)}`),
+    eventId: EventId.make(`perf-thread-created:${String(thread.id)}`),
     aggregateKind: "thread",
     aggregateId: thread.id,
     occurredAt: createdAt,
-    commandId: CommandId.makeUnsafe(`perf-thread-create:${String(thread.id)}`),
+    commandId: CommandId.make(`perf-thread-create:${String(thread.id)}`),
     causationEventId: null,
-    correlationId: CommandId.makeUnsafe(`perf-thread-create:${String(thread.id)}`),
+    correlationId: CommandId.make(`perf-thread-create:${String(thread.id)}`),
     metadata: {},
     payload: {
       threadId: thread.id,
@@ -420,7 +421,7 @@ function buildThreadTurnEvents(
           threadId: thread.id,
           turnId,
           checkpointTurnCount: turnIndex,
-          checkpointRef: CheckpointRef.makeUnsafe(
+          checkpointRef: CheckpointRef.make(
             `refs/perf/${String(thread.id)}/${turnIndex.toString().padStart(4, "0")}`,
           ),
           status: "ready",
@@ -493,6 +494,7 @@ async function createTemplateDir(scenarioId: PerfSeedScenarioId): Promise<string
     Layer.provideMerge(OrchestrationProjectionSnapshotQueryLive),
     Layer.provideMerge(OrchestrationProjectionPipelineLive),
     Layer.provideMerge(OrchestrationEventStoreLive),
+    Layer.provideMerge(RepositoryIdentityResolverLive),
     Layer.provideMerge(ServerSettingsLive),
     Layer.provideMerge(SqlitePersistenceLayerLive),
     Layer.provideMerge(ServerConfig.layerTest(workspaceRoot, baseDir)),
@@ -565,6 +567,7 @@ export async function seedPerfState(scenarioId: PerfSeedScenarioId): Promise<Per
 
   const snapshotLayer = Layer.empty.pipe(
     Layer.provideMerge(OrchestrationProjectionSnapshotQueryLive),
+    Layer.provideMerge(RepositoryIdentityResolverLive),
     Layer.provideMerge(ServerSettingsLive),
     Layer.provideMerge(SqlitePersistenceLayerLive),
     Layer.provideMerge(ServerConfig.layerTest(workspaceRoot, baseDir)),

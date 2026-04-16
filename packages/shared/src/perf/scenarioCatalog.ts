@@ -64,7 +64,7 @@ const PERF_MODEL_SELECTION: ModelSelection = {
   model: DEFAULT_MODEL_BY_PROVIDER.codex,
 };
 
-const makeProjectId = (slug: string) => ProjectId.makeUnsafe(`perf-project-${slug}`);
+const makeProjectId = (slug: string) => ProjectId.make(`perf-project-${slug}`);
 const makeProject = (slug: string, title: string): PerfProjectScenario => ({
   id: makeProjectId(slug),
   title,
@@ -72,25 +72,25 @@ const makeProject = (slug: string, title: string): PerfProjectScenario => ({
   defaultModelSelection: PERF_MODEL_SELECTION,
 });
 
-const makeThreadId = (slug: string) => ThreadId.makeUnsafe(`perf-thread-${slug}`);
+const makeThreadId = (slug: string) => ThreadId.make(`perf-thread-${slug}`);
 const makeTurnId = (threadSlug: string, index: number) =>
-  TurnId.makeUnsafe(`perf-turn-${threadSlug}-${index.toString().padStart(4, "0")}`);
+  TurnId.make(`perf-turn-${threadSlug}-${index.toString().padStart(4, "0")}`);
 const makeMessageId = (
   threadSlug: string,
   role: "user" | "assistant",
   turnIndex: number,
   messageIndex = 1,
 ) =>
-  MessageId.makeUnsafe(
+  MessageId.make(
     `perf-message-${threadSlug}-${role}-${turnIndex.toString().padStart(4, "0")}-${messageIndex.toString().padStart(2, "0")}`,
   );
-const makeLiveTurnId = (slug: string) => TurnId.makeUnsafe(`perf-live-turn-${slug}`);
+const makeLiveTurnId = (slug: string) => TurnId.make(`perf-live-turn-${slug}`);
 const makeLiveAssistantItemId = (
   laneKey: string,
   cycleIndex: number,
   segment: "intro" | "followup",
 ) => `perf-assistant-${laneKey}-${cycleIndex.toString().padStart(2, "0")}-${segment}`;
-const makeLiveAssistantMessageId = (itemId: string) => MessageId.makeUnsafe(`assistant:${itemId}`);
+const makeLiveAssistantMessageId = (itemId: string) => MessageId.make(`assistant:${itemId}`);
 const threadSlugFromId = (threadId: ThreadId) => threadId.replace("perf-thread-", "");
 
 function threadSeedValue(threadSlug: string): number {
@@ -1217,5 +1217,5 @@ export function perfMessageIdForThread(
 }
 
 export function perfEventId(prefix: string, threadId: ThreadId, index: number) {
-  return EventId.makeUnsafe(`${prefix}:${threadId}:${index.toString().padStart(4, "0")}`);
+  return EventId.make(`${prefix}:${threadId}:${index.toString().padStart(4, "0")}`);
 }

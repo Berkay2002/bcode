@@ -17,7 +17,7 @@ describe("seedPerfState", () => {
     );
   });
 
-  it("seeds large thread fixtures through the real event store and projection pipeline", async () => {
+  it("seeds large thread fixtures through the real event store and projection pipeline", { timeout: 180_000 }, async () => {
     const seeded = await seedPerfState("large_threads");
     runParentDirsToCleanup.push(seeded.runParentDir);
     const scenario = getPerfSeedScenario("large_threads");

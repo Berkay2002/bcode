@@ -1842,7 +1842,11 @@ it.layer(NodeServices.layer)("server router seam", (it) => {
         assert.deepEqual(first.config.keybindings, []);
         assert.deepEqual(first.config.issues, []);
         assert.deepEqual(first.config.providers, providers);
-        assert.equal(first.config.observability.logsDirectoryPath.endsWith("/logs"), true);
+        assert.equal(
+          first.config.observability.logsDirectoryPath.endsWith("/logs") ||
+            first.config.observability.logsDirectoryPath.endsWith("\\logs"),
+          true,
+        );
         assert.equal(first.config.observability.localTracingEnabled, true);
         assert.equal(first.config.observability.otlpTracesUrl, "http://localhost:4318/v1/traces");
         assert.equal(first.config.observability.otlpTracesEnabled, true);
@@ -2009,7 +2013,11 @@ it.layer(NodeServices.layer)("server router seam", (it) => {
       assertTrue(result.failure._tag === "ProjectSearchEntriesError");
       assertInclude(
         result.failure.message,
-        "Workspace root does not exist: /definitely/not/a/real/workspace/path",
+        "Workspace root does not exist:",
+      );
+      assertInclude(
+        result.failure.message,
+        "definitely",
       );
     }).pipe(Effect.provide(NodeHttpServer.layerTest)),
   );

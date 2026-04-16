@@ -1,3 +1,4 @@
+import * as NFS from "node:fs";
 import os from "node:os";
 
 import { assert, expect, it } from "@effect/vitest";
@@ -25,7 +26,10 @@ it.layer(NodeServices.layer)("cli config resolution", (it) => {
     const fs = yield* FileSystem.FileSystem;
     const filePath = yield* fs.makeTempFileScoped({ prefix: "t3-bootstrap-", suffix: ".ndjson" });
     yield* fs.writeFileString(filePath, `${JSON.stringify(payload)}\n`);
-    const { fd } = yield* fs.open(filePath, { flag: "r" });
+    // Use NFS.openSync directly instead of effect's fs.open to avoid scope-managed
+    // handle conflicts: on Windows the bootstrap reader's autoClose stream consumes
+    // the fd, and the scope finalizer would then EBADF trying to close it again.
+    const fd = NFS.openSync(filePath, "r");
     return fd;
   });
 
@@ -219,7 +223,7 @@ it.layer(NodeServices.layer)("cli config resolution", (it) => {
   it.effect("uses bootstrap envelope values as fallbacks when flags and env are absent", () =>
     Effect.gen(function* () {
       const { join } = yield* Path.Path;
-      const baseDir = "/tmp/t3-bootstrap-home";
+      const baseDir = join(os.tmpdir(), "t3-bootstrap-home");
       const fd = yield* openBootstrapFd({
         mode: "desktop",
         port: 4888,

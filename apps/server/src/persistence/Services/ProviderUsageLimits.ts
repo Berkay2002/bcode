@@ -4,7 +4,7 @@ import {
   ProviderKind as ProviderKindSchema,
 } from "@t3tools/contracts";
 import { ServerProviderUsageLimits } from "@t3tools/contracts";
-import { Option, Schema, ServiceMap, type Stream } from "effect";
+import { Context, Option, Schema, type Stream } from "effect";
 import type { Effect } from "effect";
 
 import type { ProviderUsageLimitsRepositoryError } from "../Errors.ts";
@@ -32,7 +32,7 @@ export interface ProviderUsageLimitsRepositoryShape {
   readonly streamChanges: Stream.Stream<StoredProviderUsageLimits>;
 }
 
-export class ProviderUsageLimitsRepository extends ServiceMap.Service<
+export class ProviderUsageLimitsRepository extends Context.Service<
   ProviderUsageLimitsRepository,
   ProviderUsageLimitsRepositoryShape
 >()("t3/persistence/Services/ProviderUsageLimits/ProviderUsageLimitsRepository") {}

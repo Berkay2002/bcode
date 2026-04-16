@@ -1609,7 +1609,7 @@ describe("ClaudeAdapterLive", () => {
     () => {
       const harness = makeHarness();
       return Effect.gen(function* () {
-        const services = yield* Effect.services();
+        const services = yield* Effect.context();
         const runFork = Effect.runForkWith(services);
 
         const adapter = yield* ClaudeAdapter;
@@ -1678,7 +1678,7 @@ describe("ClaudeAdapterLive", () => {
     () => {
       const harness = makeHarness();
       return Effect.gen(function* () {
-        const services = yield* Effect.services();
+        const services = yield* Effect.context();
         const runFork = Effect.runForkWith(services);
 
         const adapter = yield* ClaudeAdapter;

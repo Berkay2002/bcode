@@ -17,7 +17,7 @@ vi.mock("node:child_process", async () => {
   };
 });
 
-import { probeCodexAccountState } from "./codexAppServer";
+import { probeCodexDiscovery } from "./codexAppServer";
 
 type RateLimitsBehavior = "ignore" | "respond" | "respondWithLimitId";
 
@@ -77,9 +77,14 @@ function createMockCodexProbeChild(
         continue;
       }
 
-      if (message.id === 2 && message.method === "account/read") {
+      if (message.id === 2 && message.method === "skills/list") {
+        writeResponse({ id: 2, result: { skills: [] } });
+        continue;
+      }
+
+      if (message.id === 3 && message.method === "account/read") {
         writeResponse({
-          id: 2,
+          id: 3,
           result: {
             account: {
               type: "chatgpt",
@@ -90,10 +95,10 @@ function createMockCodexProbeChild(
         continue;
       }
 
-      if (message.id === 3 && message.method === "account/rateLimits/read") {
+      if (message.id === 4 && message.method === "account/rateLimits/read") {
         if (rateLimitsBehavior === "respond") {
           writeResponse({
-            id: 3,
+            id: 4,
             result: {
               rateLimits: {
                 primary: {
@@ -111,7 +116,7 @@ function createMockCodexProbeChild(
           });
         } else if (rateLimitsBehavior === "respondWithLimitId") {
           writeResponse({
-            id: 3,
+            id: 4,
             result: {
               rateLimits: {
                 primary: {
@@ -145,25 +150,20 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe("probeCodexAccountState", () => {
+describe("probeCodexDiscovery", () => {
   it("resolves when account/rateLimits/read is ignored", async () => {
     spawnMock.mockImplementation(() => createMockCodexProbeChild("ignore"));
 
-    const state = await probeCodexAccountState({
+    const state = await probeCodexDiscovery({
       binaryPath: "codex",
+      cwd: process.cwd(),
       signal: AbortSignal.timeout(2_500),
     });
 
-    expect(state.snapshot).toEqual({
+    expect(state.account).toEqual({
       type: "chatgpt",
       planType: "pro",
       sparkEnabled: true,
-    });
-    expect(state.account).toEqual({
-      account: {
-        type: "chatgpt",
-        planType: "pro",
-      },
     });
     expect(state.rateLimits).toBeNull();
   });
@@ -171,12 +171,13 @@ describe("probeCodexAccountState", () => {
   it("includes rate limits when account/rateLimits/read responds", async () => {
     spawnMock.mockImplementation(() => createMockCodexProbeChild("respond"));
 
-    const state = await probeCodexAccountState({
+    const state = await probeCodexDiscovery({
       binaryPath: "codex",
+      cwd: process.cwd(),
       signal: AbortSignal.timeout(1_000),
     });
 
-    expect(state.snapshot).toEqual({
+    expect(state.account).toEqual({
       type: "chatgpt",
       planType: "pro",
       sparkEnabled: true,
@@ -200,8 +201,9 @@ describe("probeCodexAccountState", () => {
   it("preserves top-level rateLimitsByLimitId payloads from account/rateLimits/read", async () => {
     spawnMock.mockImplementation(() => createMockCodexProbeChild("respondWithLimitId"));
 
-    const state = await probeCodexAccountState({
+    const state = await probeCodexDiscovery({
       binaryPath: "codex",
+      cwd: process.cwd(),
       signal: AbortSignal.timeout(1_000),
     });
 
