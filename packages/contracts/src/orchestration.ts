@@ -41,7 +41,7 @@ export const ProviderSandboxMode = Schema.Literals([
 ]);
 export type ProviderSandboxMode = typeof ProviderSandboxMode.Type;
 
-export const DEFAULT_PROVIDER_KIND: ProviderKind = "codex";
+export const DEFAULT_PROVIDER_KIND: ProviderKind = "claudeAgent";
 
 export const CodexModelSelection = Schema.Struct({
   provider: Schema.Literal("codex"),
