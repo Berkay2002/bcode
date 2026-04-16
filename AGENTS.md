@@ -46,6 +46,13 @@ BCode is Claude-first. The default provider is `claudeAgent` (configured in `pac
 - Orchestration engine: `apps/server/src/orchestration/Layers/OrchestrationEngine.ts`
 - Web app consumes orchestration domain events via WebSocket push on channel `orchestration.domainEvent`.
 
+## Internal Docs
+
+- `docs/effect-fn-checklist.md` — Effect.fn refactor pattern. Follow this when writing or refactoring Effect.js code.
+- `docs/observability.md` — Logging, tracing, and OTLP export architecture.
+- `docs/perf-benchmarks.md` — Local perf regression harness (browser + server latency benchmarks).
+- `docs/release.md` — Release workflow for stable and nightly desktop builds.
+
 ## Reference Repos
 
 - Upstream T3 Code: https://github.com/pingdotgg/t3code

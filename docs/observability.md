@@ -1,6 +1,6 @@
 # Observability
 
-T3 Code has one server-side observability model:
+BCode has one server-side observability model:
 
 - pretty logs go to stdout for humans
 - completed spans go to a local NDJSON trace file
