@@ -424,14 +424,13 @@ function dedupeSlashCommands(
  * subscription type information.
  */
 const probeClaudeCapabilities = (binaryPath: string) => {
-  const abort = new AbortController();
+  let q: ReturnType<typeof claudeQuery> | undefined;
   return Effect.tryPromise(async () => {
-    const q = claudeQuery({
+    q = claudeQuery({
       prompt: ".",
       options: {
         persistSession: false,
         pathToClaudeCodeExecutable: binaryPath,
-        abortController: abort,
         maxTurns: 0,
         settingSources: ["user", "project", "local"],
         allowedTools: [],
@@ -446,7 +445,7 @@ const probeClaudeCapabilities = (binaryPath: string) => {
   }).pipe(
     Effect.ensuring(
       Effect.sync(() => {
-        if (!abort.signal.aborted) abort.abort();
+        q?.close();
       }),
     ),
     Effect.timeoutOption(CAPABILITIES_PROBE_TIMEOUT_MS),
