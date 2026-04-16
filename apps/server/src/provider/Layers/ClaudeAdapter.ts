@@ -8,6 +8,7 @@
  */
 import {
   type CanUseTool,
+  type HookCallback,
   query,
   type Options as ClaudeQueryOptions,
   type PermissionMode,
@@ -82,6 +83,8 @@ import { ClaudeAdapter, type ClaudeAdapterShape } from "../Services/ClaudeAdapte
 import { type EventNdjsonLogger, makeEventNdjsonLogger } from "./EventNdjsonLogger.ts";
 
 const PROVIDER = "claudeAgent" as const;
+const CLAUDE_COMPACT_COMMAND = "/compact";
+const CLAUDE_COMPACT_TIMEOUT_MS = 60_000;
 type ClaudeTextStreamKind = Extract<RuntimeContentStreamKind, "assistant_text" | "reasoning_text">;
 type ClaudeToolResultStreamKind = Extract<
   RuntimeContentStreamKind,
@@ -135,6 +138,10 @@ interface PendingUserInput {
   readonly answers: Deferred.Deferred<ProviderUserInputAnswers>;
 }
 
+interface PendingCompaction {
+  readonly summary: Deferred.Deferred<string | null>;
+}
+
 interface ToolInFlight {
   readonly itemId: string;
   readonly itemType: CanonicalItemType;
@@ -162,6 +169,7 @@ interface ClaudeSessionContext {
     items: Array<unknown>;
   }>;
   readonly inFlightTools: Map<number, ToolInFlight>;
+  pendingCompaction: PendingCompaction | undefined;
   turnState: ClaudeTurnState | undefined;
   lastKnownContextWindow: number | undefined;
   lastKnownTokenUsage: ThreadTokenUsageSnapshot | undefined;
@@ -2440,6 +2448,11 @@ const makeClaudeAdapter = Effect.fn("makeClaudeAdapter")(function* (
       yield* completeTurn(context, "interrupted", "Session stopped.");
     }
 
+    if (context.pendingCompaction) {
+      yield* Deferred.succeed(context.pendingCompaction.summary, null).pipe(Effect.ignore);
+      context.pendingCompaction = undefined;
+    }
+
     yield* Queue.shutdown(context.promptQueue);
 
     const streamFiber = context.streamFiber;
@@ -2542,6 +2555,15 @@ const makeClaudeAdapter = Effect.fn("makeClaudeAdapter")(function* (
       const inFlightTools = new Map<number, ToolInFlight>();
 
       const contextRef = yield* Ref.make<ClaudeSessionContext | undefined>(undefined);
+      const postCompactHook: HookCallback = async (hookInput) => {
+        if (hookInput.hook_event_name === "PostCompact") {
+          const context = await runPromise(Ref.get(contextRef));
+          if (context?.pendingCompaction) {
+            runFork(Deferred.succeed(context.pendingCompaction.summary, hookInput.compact_summary));
+          }
+        }
+        return { continue: true };
+      };
 
       /**
        * Handle AskUserQuestion tool calls by emitting a `user-input.requested`
@@ -2865,6 +2887,9 @@ const makeClaudeAdapter = Effect.fn("makeClaudeAdapter")(function* (
         canUseTool,
         env: process.env,
         ...(input.cwd ? { additionalDirectories: [input.cwd] } : {}),
+        hooks: {
+          PostCompact: [{ hooks: [postCompactHook] }],
+        },
         ...(Object.keys(extraArgs).length > 0 ? { extraArgs } : {}),
       };
 
@@ -2914,6 +2939,7 @@ const makeClaudeAdapter = Effect.fn("makeClaudeAdapter")(function* (
         pendingUserInputs,
         turns: [],
         inFlightTools,
+        pendingCompaction: undefined,
         turnState: undefined,
         lastKnownContextWindow: undefined,
         lastKnownTokenUsage: undefined,
@@ -3110,6 +3136,52 @@ const makeClaudeAdapter = Effect.fn("makeClaudeAdapter")(function* (
     },
   );
 
+  const compactThread: ClaudeAdapterShape["compactThread"] = Effect.fn("compactThread")(
+    function* (threadId) {
+      const context = yield* requireSession(threadId);
+      if (context.pendingCompaction) {
+        return yield* new ProviderAdapterRequestError({
+          provider: PROVIDER,
+          method: "thread/compact/start",
+          detail: "Claude thread compaction is already in progress.",
+        });
+      }
+
+      const summary = yield* Deferred.make<string | null>();
+      context.pendingCompaction = { summary };
+
+      yield* Queue.offer(context.promptQueue, {
+        type: "message",
+        message: buildUserMessage({
+          sdkContent: [{ type: "text", text: CLAUDE_COMPACT_COMMAND }],
+        }),
+      }).pipe(Effect.mapError((cause) => toRequestError(threadId, "thread/compact/start", cause)));
+
+      return yield* Deferred.await(summary).pipe(
+        Effect.raceFirst(
+          Effect.sleep(CLAUDE_COMPACT_TIMEOUT_MS).pipe(
+            Effect.flatMap(() =>
+              Effect.fail(
+                new ProviderAdapterRequestError({
+                  provider: PROVIDER,
+                  method: "thread/compact/start",
+                  detail: "Timed out waiting for Claude thread compaction.",
+                }),
+              ),
+            ),
+          ),
+        ),
+        Effect.ensuring(
+          Effect.sync(() => {
+            if (context.pendingCompaction?.summary === summary) {
+              context.pendingCompaction = undefined;
+            }
+          }),
+        ),
+      );
+    },
+  );
+
   const rollbackThread: ClaudeAdapterShape["rollbackThread"] = Effect.fn("rollbackThread")(
     function* (threadId, numTurns) {
       const context = yield* requireSession(threadId);
@@ -3202,6 +3274,7 @@ const makeClaudeAdapter = Effect.fn("makeClaudeAdapter")(function* (
     sendTurn,
     interruptTurn,
     readThread,
+    compactThread,
     rollbackThread,
     respondToRequest,
     respondToUserInput,

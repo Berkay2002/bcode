@@ -16,6 +16,7 @@ import { type TurnDiffSummary } from "../../types";
 import { summarizeTurnDiffStats } from "../../lib/turnDiffTree";
 import ChatMarkdown from "../ChatMarkdown";
 import {
+  ArrowRightIcon,
   BotIcon,
   CheckIcon,
   CircleAlertIcon,
@@ -54,6 +55,7 @@ import { cn } from "~/lib/utils";
 import { useUiStateStore } from "~/uiStateStore";
 import { type TimestampFormat } from "@t3tools/contracts/settings";
 import { formatTimestamp } from "../../timestampFormat";
+import { PROVIDER_ICON_BY_PROVIDER, providerIconClassName } from "./ProviderModelPicker";
 
 import {
   buildInlineTerminalContextText,
@@ -538,11 +540,20 @@ const WorkGroupSection = memo(function WorkGroupSection({
       : groupedEntries;
   const hiddenCount = groupedEntries.length - visibleEntries.length;
   const onlyToolEntries = groupedEntries.every((entry) => entry.tone === "tool");
-  const showHeader = hasOverflow || !onlyToolEntries;
+  const onlyProviderHandoffEntries = groupedEntries.every(
+    (entry) => entry.providerHandoff !== undefined,
+  );
+  const showHeader = !onlyProviderHandoffEntries && (hasOverflow || !onlyToolEntries);
   const groupLabel = onlyToolEntries ? "Tool calls" : "Work log";
 
   return (
-    <div className="rounded-xl border border-border/45 bg-card/25 px-2 py-1.5">
+    <div
+      className={
+        onlyProviderHandoffEntries
+          ? "space-y-1 py-1"
+          : "rounded-xl border border-border/45 bg-card/25 px-2 py-1.5"
+      }
+    >
       {showHeader && (
         <div className="mb-1.5 flex items-center justify-between gap-2 px-0.5">
           <p className="text-[9px] uppercase tracking-[0.16em] text-muted-foreground/55">
@@ -564,6 +575,7 @@ const WorkGroupSection = memo(function WorkGroupSection({
           <SimpleWorkEntryRow
             key={`work-row:${workEntry.id}`}
             workEntry={workEntry}
+            standaloneProviderHandoff={onlyProviderHandoffEntries}
             workspaceRoot={workspaceRoot}
           />
         ))}
@@ -932,9 +944,18 @@ function toolWorkEntryHeading(workEntry: TimelineWorkEntry): string {
 
 const SimpleWorkEntryRow = memo(function SimpleWorkEntryRow(props: {
   workEntry: TimelineWorkEntry;
+  standaloneProviderHandoff?: boolean;
   workspaceRoot: string | undefined;
 }) {
   const { workEntry, workspaceRoot } = props;
+  if (workEntry.providerHandoff) {
+    return (
+      <ProviderHandoffWorkEntryRow
+        workEntry={workEntry}
+        standalone={props.standaloneProviderHandoff ?? false}
+      />
+    );
+  }
   const iconConfig = workToneIcon(workEntry.tone);
   const EntryIcon = workEntryIcon(workEntry);
   const heading = toolWorkEntryHeading(workEntry);
@@ -1016,6 +1037,66 @@ const SimpleWorkEntryRow = memo(function SimpleWorkEntryRow(props: {
           )}
         </div>
       )}
+    </div>
+  );
+});
+
+const ProviderHandoffWorkEntryRow = memo(function ProviderHandoffWorkEntryRow(props: {
+  workEntry: TimelineWorkEntry;
+  standalone: boolean;
+}) {
+  const { workEntry } = props;
+  const providerHandoff = workEntry.providerHandoff;
+  if (!providerHandoff) {
+    return null;
+  }
+  const { sourceProvider, targetProvider, state } = providerHandoff;
+  const SourceProviderIcon = PROVIDER_ICON_BY_PROVIDER[sourceProvider];
+  const TargetProviderIcon = PROVIDER_ICON_BY_PROVIDER[targetProvider];
+
+  const pill = (
+    <div className="inline-flex min-w-0 max-w-full items-center gap-2 rounded-full border border-border bg-background/90 px-3 py-1.5 text-[11px] text-muted-foreground/75 shadow-sm">
+      <span className="inline-flex shrink-0 items-center gap-1.5">
+        <SourceProviderIcon
+          aria-hidden="true"
+          className={cn("size-3.5", providerIconClassName(sourceProvider, "text-foreground/75"))}
+        />
+        <ArrowRightIcon aria-hidden="true" className="size-3 text-muted-foreground/45" />
+        <TargetProviderIcon
+          aria-hidden="true"
+          className={cn("size-3.5", providerIconClassName(targetProvider, "text-foreground/75"))}
+        />
+      </span>
+      <span className="sr-only">
+        {sourceProvider === "codex" ? "Codex" : "Claude"} to{" "}
+        {targetProvider === "codex" ? "Codex" : "Claude"}
+      </span>
+      <span className="min-w-0 truncate text-foreground/80" title={workEntry.label}>
+        {workEntry.label}
+      </span>
+      <span className="inline-flex shrink-0 items-center gap-1.5">
+        {state === "compacting" ? (
+          <span className="inline-flex items-center gap-[3px]" aria-hidden="true">
+            <span className="h-1 w-1 rounded-full bg-muted-foreground/35 animate-pulse" />
+            <span className="h-1 w-1 rounded-full bg-muted-foreground/35 animate-pulse [animation-delay:150ms]" />
+            <span className="h-1 w-1 rounded-full bg-muted-foreground/35 animate-pulse [animation-delay:300ms]" />
+          </span>
+        ) : (
+          <CheckIcon aria-hidden="true" className="size-3 text-muted-foreground/55" />
+        )}
+      </span>
+    </div>
+  );
+
+  if (!props.standalone) {
+    return <div className="px-1 py-1">{pill}</div>;
+  }
+
+  return (
+    <div className="flex items-center gap-3 py-1">
+      <span className="h-px flex-1 bg-border" />
+      {pill}
+      <span className="h-px flex-1 bg-border" />
     </div>
   );
 });
