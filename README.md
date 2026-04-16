@@ -1,11 +1,11 @@
-# T3 Code
+# BCode
 
-T3 Code is a minimal web GUI for coding agents (currently Codex and Claude, more coming soon).
+BCode is a minimal web GUI for coding agents (currently Claude and Codex, more coming soon).
 
 ## Installation
 
 > [!WARNING]
-> T3 Code currently supports Codex and Claude.
+> BCode currently supports Claude and Codex.
 > Install and authenticate at least one provider before use:
 >
 > - Codex: install [Codex CLI](https://github.com/openai/codex) and run `codex login`
