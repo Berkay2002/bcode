@@ -282,8 +282,6 @@ jobs:
         run: bun run build --filter=@t3tools/web --filter=@berkayorhan/bcode
 
       - name: Publish CLI package
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: node apps/server/scripts/cli.ts publish --tag "${{ needs.preflight.outputs.cli_dist_tag }}" --app-version "${{ needs.preflight.outputs.version }}" --verbose
 
   release:
