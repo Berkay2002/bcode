@@ -5,6 +5,7 @@ import { ChatAttachment } from "@t3tools/contracts";
 
 import { toPersistenceSqlError } from "../Errors.ts";
 import {
+  AppendProjectionThreadMessageDeltaInput,
   GetProjectionThreadMessageInput,
   ProjectionThreadMessageRepository,
   type ProjectionThreadMessageRepositoryShape,
@@ -133,6 +134,50 @@ const makeProjectionThreadMessageRepository = Effect.gen(function* () {
       `,
   });
 
+  const appendProjectionThreadMessageDeltaRow = SqlSchema.void({
+    Request: AppendProjectionThreadMessageDeltaInput,
+    execute: (row) => {
+      const nextAttachmentsJson =
+        row.attachments !== undefined ? JSON.stringify(row.attachments) : null;
+      return sql`
+        INSERT INTO projection_thread_messages (
+          message_id,
+          thread_id,
+          turn_id,
+          role,
+          text,
+          attachments_json,
+          is_streaming,
+          created_at,
+          updated_at
+        )
+        VALUES (
+          ${row.messageId},
+          ${row.threadId},
+          ${row.turnId},
+          ${row.role},
+          ${row.delta},
+          ${nextAttachmentsJson},
+          ${row.isStreaming ? 1 : 0},
+          ${row.createdAt},
+          ${row.updatedAt}
+        )
+        ON CONFLICT (message_id)
+        DO UPDATE SET
+          thread_id = excluded.thread_id,
+          turn_id = COALESCE(excluded.turn_id, projection_thread_messages.turn_id),
+          role = excluded.role,
+          text = projection_thread_messages.text || excluded.text,
+          attachments_json = COALESCE(
+            excluded.attachments_json,
+            projection_thread_messages.attachments_json
+          ),
+          is_streaming = excluded.is_streaming,
+          updated_at = excluded.updated_at
+      `;
+    },
+  });
+
   const deleteProjectionThreadMessageRows = SqlSchema.void({
     Request: DeleteProjectionThreadMessagesInput,
     execute: ({ threadId }) =>
@@ -163,6 +208,13 @@ const makeProjectionThreadMessageRepository = Effect.gen(function* () {
       Effect.map((rows) => rows.map(toProjectionThreadMessage)),
     );
 
+  const appendTextDelta: ProjectionThreadMessageRepositoryShape["appendTextDelta"] = (input) =>
+    appendProjectionThreadMessageDeltaRow(input).pipe(
+      Effect.mapError(
+        toPersistenceSqlError("ProjectionThreadMessageRepository.appendTextDelta:query"),
+      ),
+    );
+
   const deleteByThreadId: ProjectionThreadMessageRepositoryShape["deleteByThreadId"] = (input) =>
     deleteProjectionThreadMessageRows(input).pipe(
       Effect.mapError(
@@ -174,6 +226,7 @@ const makeProjectionThreadMessageRepository = Effect.gen(function* () {
     upsert,
     getByMessageId,
     listByThreadId,
+    appendTextDelta,
     deleteByThreadId,
   } satisfies ProjectionThreadMessageRepositoryShape;
 });

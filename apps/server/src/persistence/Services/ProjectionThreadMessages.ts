@@ -14,8 +14,7 @@ import {
   TurnId,
   IsoDateTime,
 } from "@t3tools/contracts";
-import { Schema, Context } from "effect";
-import type { Option } from "effect";
+import { Option, Schema, Context } from "effect";
 import type { Effect } from "effect";
 
 import type { ProjectionRepositoryError } from "../Errors.ts";
@@ -48,6 +47,20 @@ export const DeleteProjectionThreadMessagesInput = Schema.Struct({
 });
 export type DeleteProjectionThreadMessagesInput = typeof DeleteProjectionThreadMessagesInput.Type;
 
+export const AppendProjectionThreadMessageDeltaInput = Schema.Struct({
+  messageId: MessageId,
+  threadId: ThreadId,
+  turnId: Schema.NullOr(TurnId),
+  role: OrchestrationMessageRole,
+  delta: Schema.String,
+  attachments: Schema.optional(Schema.Array(ChatAttachment)),
+  isStreaming: Schema.Boolean,
+  createdAt: IsoDateTime,
+  updatedAt: IsoDateTime,
+});
+export type AppendProjectionThreadMessageDeltaInput =
+  typeof AppendProjectionThreadMessageDeltaInput.Type;
+
 /**
  * ProjectionThreadMessageRepositoryShape - Service API for projected thread messages.
  */
@@ -76,6 +89,13 @@ export interface ProjectionThreadMessageRepositoryShape {
   readonly listByThreadId: (
     input: ListProjectionThreadMessagesInput,
   ) => Effect.Effect<ReadonlyArray<ProjectionThreadMessage>, ProjectionRepositoryError>;
+
+  /**
+   * Append a streaming text delta to an existing projected message row, or insert it.
+   */
+  readonly appendTextDelta: (
+    input: AppendProjectionThreadMessageDeltaInput,
+  ) => Effect.Effect<void, ProjectionRepositoryError>;
 
   /**
    * Delete projected thread messages by thread.
