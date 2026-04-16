@@ -48,6 +48,14 @@
       "types": "./src/String.ts",
       "import": "./src/String.ts"
     },
+    "./perf/scenarioCatalog": {
+      "types": "./src/perf/scenarioCatalog.ts",
+      "import": "./src/perf/scenarioCatalog.ts"
+    },
+    "./perf/artifact": {
+      "types": "./src/perf/artifact.ts",
+      "import": "./src/perf/artifact.ts"
+    },
     "./projectScripts": {
       "types": "./src/projectScripts.ts",
       "import": "./src/projectScripts.ts"

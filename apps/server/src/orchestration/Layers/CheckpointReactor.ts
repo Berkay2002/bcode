@@ -523,21 +523,8 @@ const make = Effect.gen(function* () {
   const ensurePreTurnBaselineFromDomainTurnStart = Effect.fn(
     "ensurePreTurnBaselineFromDomainTurnStart",
   )(function* (
-    event: Extract<
-      OrchestrationEvent,
-      { type: "thread.turn-start-requested" | "thread.message-sent" }
-    >,
+    event: Extract<OrchestrationEvent, { type: "thread.turn-start-requested" }>,
   ) {
-    if (event.type === "thread.message-sent") {
-      if (
-        event.payload.role !== "user" ||
-        event.payload.streaming ||
-        event.payload.turnId !== null
-      ) {
-        return;
-      }
-    }
-
     const threadId = event.payload.threadId;
     const readModel = yield* orchestrationEngine.getReadModel();
     const thread = readModel.threads.find((entry) => entry.id === threadId);
@@ -710,7 +697,7 @@ const make = Effect.gen(function* () {
   });
 
   const processDomainEvent = Effect.fn("processDomainEvent")(function* (event: OrchestrationEvent) {
-    if (event.type === "thread.turn-start-requested" || event.type === "thread.message-sent") {
+    if (event.type === "thread.turn-start-requested") {
       yield* ensurePreTurnBaselineFromDomainTurnStart(event);
       return;
     }
@@ -799,7 +786,6 @@ const make = Effect.gen(function* () {
       Stream.runForEach(orchestrationEngine.streamDomainEvents, (event) => {
         if (
           event.type !== "thread.turn-start-requested" &&
-          event.type !== "thread.message-sent" &&
           event.type !== "thread.checkpoint-revert-requested" &&
           event.type !== "thread.turn-diff-completed"
         ) {
