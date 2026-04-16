@@ -24,3 +24,4 @@ __screenshots__/
 squashfs-root/
 artifacts/
 CLAUDE.local.md
+.claude/settings.local.json
