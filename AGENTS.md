@@ -12,8 +12,18 @@ BCode is a minimal web GUI for using coding agents. Claude is the default and pr
 This is a fork of T3 Code (pingdotgg/t3code). The rebrand is progressive:
 
 - **User-facing strings** (UI labels, dialog text, window titles, error messages, docs, release names): Use **"BCode"**. Never introduce new "T3 Code" references.
-- **Internal identifiers** (package scopes `@t3tools/*`, env vars like `T3CODE_HOME`, TypeScript types, protocol names, npm package `t3`, `npx t3` commands): Keep **unchanged** for upstream compatibility. Do not rename these.
+- **Internal identifiers — do NOT rename** (upstream compatibility):
+  - Environment variables: `T3CODE_*` prefix
+  - Protocol scheme: `t3://`
+  - Home directory: `~/.t3`
+  - Package scopes: `@t3tools/*`
+  - npm package `t3`, `npx t3` commands
+  - COM identifiers: `com.t3tools.t3code`
+  - Linux desktop entries: `t3code.desktop`
+  - localStorage keys: `t3code:theme`
+  - TypeScript types, internal constants
 - **Legacy directory names** (e.g. `LEGACY_USER_DATA_DIR_NAME`): Keep as "T3 Code" — they reference old on-disk paths for migration.
+- **Icons/logos**: Reuse existing assets for now.
 
 When writing new code, use "BCode" in anything a user would see and the existing internal identifiers for everything else.
 
