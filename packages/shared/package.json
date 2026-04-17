@@ -32,6 +32,10 @@
       "types": "./src/paths.ts",
       "import": "./src/paths.ts"
     },
+    "./migration/userDataMigration": {
+      "types": "./src/migration/userDataMigration.ts",
+      "import": "./src/migration/userDataMigration.ts"
+    },
     "./DrainableWorker": {
       "types": "./src/DrainableWorker.ts",
       "import": "./src/DrainableWorker.ts"
@@ -100,6 +104,7 @@
   },
   "devDependencies": {
     "@effect/language-service": "catalog:",
+    "@effect/platform-node": "catalog:",
     "@effect/vitest": "catalog:",
     "@types/node": "catalog:",
     "typescript": "catalog:",
