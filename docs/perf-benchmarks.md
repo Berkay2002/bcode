@@ -150,7 +150,7 @@ From the repo root:
 bun run test:perf:web
 ```
 
-That command builds `@bcode/web`, builds `t3`, and then runs the dedicated perf Vitest config.
+That command builds `@bcode/web`, builds `@berkayorhan/bcode`, and then runs the dedicated perf Vitest config.
 
 ### Re-run the perf suite without rebuilding
 

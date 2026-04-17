@@ -24,7 +24,6 @@ This is a fork of T3 Code (pingdotgg/t3code). The rebrand is progressive:
   - `LEGACY_USER_DATA_DIR_NAME = "T3 Code (Alpha)"` / `"T3 Code (Dev)"` — pre-T3 electron userData path.
   - `USER_DATA_DIR_NAME = "t3code"` / `"t3code-dev"` — electron's current userData subdir; a deliberate non-rename to preserve existing installs' window state, cookies, and renderer cache. May be renamed in a later cleanup.
   - `LEGACY_T3_HOME_DIR_NAME = ".t3"` — read by the migration module only.
-- **Legacy directory names** (e.g. `LEGACY_USER_DATA_DIR_NAME`): Keep as "T3 Code" — they reference old on-disk paths for migration.
 - **Icons/logos**: Reuse existing assets for now.
 
 When writing new code, use "BCode" in anything a user would see and the existing internal identifiers for everything else.
