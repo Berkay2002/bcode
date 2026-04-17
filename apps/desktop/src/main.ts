@@ -36,7 +36,10 @@ import { autoUpdater } from "electron-updater";
 import type { ContextMenuItem } from "@bcode/contracts";
 import { readEnv } from "@bcode/shared/env";
 import { RotatingFileSink } from "@bcode/shared/logging";
+import { runUserDataMigration } from "@bcode/shared/migration/userDataMigration";
 import { parsePersistedServerObservabilitySettings } from "@bcode/shared/serverSettings";
+import * as NodeFileSystem from "@effect/platform-node/NodeFileSystem";
+import * as Effect from "effect/Effect";
 import { DEFAULT_DESKTOP_BACKEND_PORT, resolveDesktopBackendPort } from "./backendPort";
 import {
   DEFAULT_DESKTOP_SETTINGS,
@@ -77,6 +80,27 @@ import { isArm64HostRunningIntelBuild, resolveDesktopRuntimeInfo } from "./runti
 import { resolveDesktopAppBranding } from "./appBranding";
 
 syncShellEnvironment();
+
+function runMigrationSync(): void {
+  try {
+    Effect.runSync(
+      runUserDataMigration({ homeDir: OS.homedir() }).pipe(
+        Effect.provide(NodeFileSystem.layer),
+        Effect.catch((error) =>
+          Effect.sync(() =>
+            console.warn(
+              `[bcode] User-data migration failed (${error.step} at ${error.path}); continuing.`,
+            ),
+          ),
+        ),
+      ),
+    );
+  } catch (error) {
+    console.warn("[bcode] User-data migration threw unexpectedly; continuing.", error);
+  }
+}
+
+runMigrationSync();
 
 const PICK_FOLDER_CHANNEL = "desktop:pick-folder";
 const CONFIRM_CHANNEL = "desktop:confirm";

@@ -3,7 +3,7 @@ import { Data, Effect, FileSystem } from "effect";
 import { resolveBcodeHome, resolveLegacyT3Home, USER_DATA_MIGRATION_MARKER } from "../paths";
 
 export class MigrationBlockedError extends Data.TaggedError("MigrationBlockedError")<{
-  readonly step: "read-marker" | "ensure-dest" | "copy" | "write-marker";
+  readonly step: "read-marker" | "ensure-dest" | "copy" | "write-marker" | "stat" | "read-dir";
   readonly path: string;
   readonly cause: unknown;
 }> {}
@@ -29,8 +29,8 @@ export const runUserDataMigration = Effect.fn("runUserDataMigration")(function* 
   const markerExists = yield* fs
     .exists(marker)
     .pipe(
-      Effect.catch((cause) =>
-        Effect.fail(new MigrationBlockedError({ step: "read-marker", path: marker, cause })),
+      Effect.mapError(
+        (cause) => new MigrationBlockedError({ step: "read-marker", path: marker, cause }),
       ),
     );
   if (markerExists) {
@@ -40,12 +40,12 @@ export const runUserDataMigration = Effect.fn("runUserDataMigration")(function* 
   yield* fs
     .makeDirectory(bcodeHome, { recursive: true })
     .pipe(
-      Effect.catch((cause) =>
-        Effect.fail(new MigrationBlockedError({ step: "ensure-dest", path: bcodeHome, cause })),
+      Effect.mapError(
+        (cause) => new MigrationBlockedError({ step: "ensure-dest", path: bcodeHome, cause }),
       ),
     );
 
-  const legacyExists = yield* fs.exists(legacyHome).pipe(Effect.catch(() => Effect.succeed(false)));
+  const legacyExists = yield* fs.exists(legacyHome).pipe(Effect.orElseSucceed(() => false));
 
   let filesCopied = 0;
 
@@ -56,8 +56,8 @@ export const runUserDataMigration = Effect.fn("runUserDataMigration")(function* 
   yield* fs
     .writeFileString(marker, "v1\n")
     .pipe(
-      Effect.catch((cause) =>
-        Effect.fail(new MigrationBlockedError({ step: "write-marker", path: marker, cause })),
+      Effect.mapError(
+        (cause) => new MigrationBlockedError({ step: "write-marker", path: marker, cause }),
       ),
     );
 
@@ -80,23 +80,33 @@ const copyTree = Effect.fn("userDataMigration.copyTree")(function* (
     const src = rel.length === 0 ? srcRoot : joinPosix(srcRoot, rel);
     const dest = rel.length === 0 ? destRoot : joinPosix(destRoot, rel);
 
-    const stat = yield* fs.stat(src);
+    const stat = yield* fs
+      .stat(src)
+      .pipe(
+        Effect.mapError((cause) => new MigrationBlockedError({ step: "stat", path: src, cause })),
+      );
     if (stat.type === "Directory") {
       yield* fs
         .makeDirectory(dest, { recursive: true })
         .pipe(
-          Effect.catch((cause) =>
-            Effect.fail(new MigrationBlockedError({ step: "ensure-dest", path: dest, cause })),
+          Effect.mapError(
+            (cause) => new MigrationBlockedError({ step: "ensure-dest", path: dest, cause }),
           ),
         );
-      const entries = yield* fs.readDirectory(src);
+      const entries = yield* fs
+        .readDirectory(src)
+        .pipe(
+          Effect.mapError(
+            (cause) => new MigrationBlockedError({ step: "read-dir", path: src, cause }),
+          ),
+        );
       for (const entry of entries) {
         stack.push(rel.length === 0 ? entry : joinPosix(rel, entry));
       }
       continue;
     }
 
-    const destExists = yield* fs.exists(dest).pipe(Effect.catch(() => Effect.succeed(false)));
+    const destExists = yield* fs.exists(dest).pipe(Effect.orElseSucceed(() => false));
     if (destExists) {
       continue;
     }

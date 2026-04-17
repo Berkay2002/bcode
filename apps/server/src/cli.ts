@@ -1,3 +1,6 @@
+import * as OS from "node:os";
+
+import { runUserDataMigration } from "@bcode/shared/migration/userDataMigration";
 import { NetService } from "@bcode/shared/Net";
 import { parsePersistedServerObservabilitySettings } from "@bcode/shared/serverSettings";
 import {
@@ -269,6 +272,15 @@ export const resolveServerConfig = (
     const path = yield* Path.Path;
     const fs = yield* FileSystem.FileSystem;
     const env = yield* EnvServerConfig;
+
+    yield* runUserDataMigration({ homeDir: OS.homedir() }).pipe(
+      Effect.tapError((error) =>
+        Effect.logWarning(
+          `[bcode] User-data migration failed; continuing with existing state. ${error.step} at ${error.path}`,
+        ),
+      ),
+      Effect.catch(() => Effect.void),
+    );
     const normalizedFlags = {
       mode: flags.mode ?? Option.none(),
       port: flags.port ?? Option.none(),
