@@ -22,7 +22,7 @@ If you want a log message to show up in the trace file, emit it inside an active
 
 ### Traces
 
-Completed spans are written as NDJSON records to `serverTracePath` (by default, `~/.t3/userdata/logs/server.trace.ndjson` — the home directory flips to `~/.bcode` in a future release alongside an auto-migration).
+Completed spans are written as NDJSON records to `serverTracePath` (by default, `~/.bcode/userdata/logs/server.trace.ndjson`; existing `~/.t3/userdata/…` contents are auto-migrated on first launch of v0.0.19).
 
 Important fields in each record:
 
