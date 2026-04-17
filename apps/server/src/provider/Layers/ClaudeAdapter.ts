@@ -45,11 +45,7 @@ import {
   type ModelCapabilities,
   RuntimeMode,
 } from "@bcode/contracts";
-import {
-  applyClaudePromptEffortPrefix,
-  resolveApiModelId,
-  trimOrNull,
-} from "@bcode/shared/model";
+import { applyClaudePromptEffortPrefix, resolveApiModelId, trimOrNull } from "@bcode/shared/model";
 import {
   Cause,
   DateTime,
