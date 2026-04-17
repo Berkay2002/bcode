@@ -1,9 +1,9 @@
 import type { PerfProviderScenarioId } from "@bcode/shared/perf/scenarioCatalog";
 
-export const PERF_PROVIDER_ENV = "T3CODE_PERF_PROVIDER";
-export const PERF_SCENARIO_ENV = "T3CODE_PERF_SCENARIO";
-export const PERF_ARTIFACT_DIR_ENV = "T3CODE_PERF_ARTIFACT_DIR";
-export const PERF_HEADFUL_ENV = "T3CODE_PERF_HEADFUL";
+export const PERF_PROVIDER_ENV = "BCODE_PERF_PROVIDER";
+export const PERF_SCENARIO_ENV = "BCODE_PERF_SCENARIO";
+export const PERF_ARTIFACT_DIR_ENV = "BCODE_PERF_ARTIFACT_DIR";
+export const PERF_HEADFUL_ENV = "BCODE_PERF_HEADFUL";
 
 export function isPerfProviderEnabled(): boolean {
   return process.env[PERF_PROVIDER_ENV] === "1";

@@ -153,6 +153,9 @@ describe("ProjectSetupScriptRunner", () => {
       cwd: "/repo/worktrees/a",
       worktreePath: "/repo/worktrees/a",
       env: {
+        BCODE_PROJECT_ROOT: "/repo/project",
+        BCODE_WORKTREE_PATH: "/repo/worktrees/a",
+        // Legacy aliases written through v0.0.19 for user-authored scripts.
         T3CODE_PROJECT_ROOT: "/repo/project",
         T3CODE_WORKTREE_PATH: "/repo/worktrees/a",
       },
