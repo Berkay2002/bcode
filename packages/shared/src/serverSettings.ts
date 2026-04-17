@@ -1,4 +1,4 @@
-import { ServerSettings, type ServerSettingsPatch } from "@t3tools/contracts";
+import { ServerSettings, type ServerSettingsPatch } from "@bcode/contracts";
 import { Schema } from "effect";
 import { deepMerge } from "./Struct";
 import { fromLenientJson } from "./schemaJson";

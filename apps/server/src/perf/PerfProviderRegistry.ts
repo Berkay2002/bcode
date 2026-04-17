@@ -2,7 +2,7 @@ import {
   DEFAULT_MODEL_BY_PROVIDER,
   type ServerProvider,
   type ServerProviderModel,
-} from "@t3tools/contracts";
+} from "@bcode/contracts";
 import { Effect, Equal, Layer, PubSub, Ref, Stream } from "effect";
 
 import { getClaudeModelCapabilities } from "../provider/Layers/ClaudeProvider.ts";

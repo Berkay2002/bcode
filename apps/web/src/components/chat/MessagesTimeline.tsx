@@ -1,4 +1,4 @@
-import { type EnvironmentId, type MessageId, type TurnId } from "@t3tools/contracts";
+import { type EnvironmentId, type MessageId, type TurnId } from "@bcode/contracts";
 import {
   createContext,
   memo,
@@ -53,7 +53,7 @@ import {
 } from "~/lib/terminalContext";
 import { cn } from "~/lib/utils";
 import { useUiStateStore } from "~/uiStateStore";
-import { type TimestampFormat } from "@t3tools/contracts/settings";
+import { type TimestampFormat } from "@bcode/contracts/settings";
 import { formatTimestamp } from "../../timestampFormat";
 import { PROVIDER_ICON_BY_PROVIDER, providerIconClassName } from "./ProviderModelPicker";
 

@@ -1,4 +1,4 @@
-import type { ProviderKind } from "@t3tools/contracts";
+import type { ProviderKind } from "@bcode/contracts";
 
 const COMPACTION_TYPE_SNIPPETS = ["compact", "summary"];
 const PREFERRED_TEXT_KEYS = [

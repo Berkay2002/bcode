@@ -7,13 +7,13 @@ The web app communicates with the server via WebSocket using a simple JSON-RPC-s
 
 Push channels: `server.welcome`, `server.configUpdated`, `terminal.event`, `orchestration.domainEvent`. Payloads are schema-validated at the transport boundary (`wsTransport.ts`). Decode failures produce structured `WsDecodeDiagnostic` with `code`, `reason`, and path info.
 
-Methods mirror the `NativeApi` interface defined in `@t3tools/contracts`:
+The WS RPC surface exposes provider, shell, and server methods, consumed from the web client in `apps/web/src/environmentApi.ts` and `apps/web/src/localApi.ts`:
 
 - `providers.startSession`, `providers.sendTurn`, `providers.interruptTurn`
 - `providers.respondToRequest`, `providers.stopSession`
 - `shell.openInEditor`, `server.getConfig`
 
-Codex is the only implemented provider. `claudeCode` is reserved in contracts/UI.
+BCode is Claude-first. The default provider is `claudeAgent` (configured in `packages/contracts/src/orchestration.ts`); Codex is available as a secondary option via the provider picker.
 
 ## Client transport
 

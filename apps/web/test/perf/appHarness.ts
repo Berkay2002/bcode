@@ -22,8 +22,8 @@ import type { PerfThresholdProfile } from "../../../../test/perf/support/thresho
 import type {
   PerfProviderScenarioId,
   PerfSeedScenarioId,
-} from "@t3tools/shared/perf/scenarioCatalog";
-import { getPerfSeedScenario } from "@t3tools/shared/perf/scenarioCatalog";
+} from "@bcode/shared/perf/scenarioCatalog";
+import { getPerfSeedScenario } from "@bcode/shared/perf/scenarioCatalog";
 import {
   NoopServerSampler,
   type PerfServerSampler,

@@ -1,4 +1,4 @@
-import type { PerfProviderScenarioId } from "@t3tools/shared/perf/scenarioCatalog";
+import type { PerfProviderScenarioId } from "@bcode/shared/perf/scenarioCatalog";
 
 export const PERF_PROVIDER_ENV = "T3CODE_PERF_PROVIDER";
 export const PERF_SCENARIO_ENV = "T3CODE_PERF_SCENARIO";

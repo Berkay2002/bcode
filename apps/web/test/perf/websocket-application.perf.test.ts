@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 
 import { summarizeBrowserPerfMetrics } from "../../../../test/perf/support/artifact";
-import { PERF_CATALOG_IDS, PERF_PROVIDER_SCENARIOS } from "@t3tools/shared/perf/scenarioCatalog";
+import { PERF_CATALOG_IDS, PERF_PROVIDER_SCENARIOS } from "@bcode/shared/perf/scenarioCatalog";
 import { PERF_THRESHOLDS } from "../../../../test/perf/support/thresholds";
 import { startPerfAppHarness, type PerfAppHarness } from "./appHarness";
 import {

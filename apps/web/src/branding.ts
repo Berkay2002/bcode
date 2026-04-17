@@ -1,4 +1,4 @@
-import type { DesktopAppBranding } from "@t3tools/contracts";
+import type { DesktopAppBranding } from "@bcode/contracts";
 
 function readInjectedDesktopAppBranding(): DesktopAppBranding | null {
   if (typeof window === "undefined") {

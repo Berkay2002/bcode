@@ -1,4 +1,4 @@
-import { IsoDateTime, ProviderKind, ServerProviderUsageLimits } from "@t3tools/contracts";
+import { IsoDateTime, ProviderKind, ServerProviderUsageLimits } from "@bcode/contracts";
 import * as SqlClient from "effect/unstable/sql/SqlClient";
 import * as SqlSchema from "effect/unstable/sql/SqlSchema";
 import { Effect, Layer, Option, PubSub, Schema, Stream } from "effect";

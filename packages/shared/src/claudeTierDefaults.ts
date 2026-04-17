@@ -1,4 +1,4 @@
-import type { ClaudeAgentEffort } from "@t3tools/contracts";
+import type { ClaudeAgentEffort } from "@bcode/contracts";
 
 export type ClaudeTierDefault = {
   readonly model: string;

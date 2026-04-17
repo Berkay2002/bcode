@@ -38,11 +38,11 @@
     "open": "^10.1.0"
   },
   "devDependencies": {
+    "@bcode/contracts": "workspace:*",
+    "@bcode/shared": "workspace:*",
+    "@bcode/web": "workspace:*",
     "@effect/language-service": "catalog:",
     "@effect/vitest": "catalog:",
-    "@t3tools/contracts": "workspace:*",
-    "@t3tools/shared": "workspace:*",
-    "@t3tools/web": "workspace:*",
     "@types/bun": "catalog:",
     "@types/node": "catalog:",
     "tsdown": "catalog:",

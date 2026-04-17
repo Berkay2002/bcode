@@ -3,7 +3,7 @@ import type {
   ServerProviderUsageLimits,
   ServerProviderUsageWindow,
   ServerProviderUsageWindowKind,
-} from "@t3tools/contracts";
+} from "@bcode/contracts";
 import { Effect, Option } from "effect";
 
 import { ProviderUsageLimitsRepository } from "../persistence/Services/ProviderUsageLimits.ts";

@@ -30,12 +30,12 @@ import type {
   DesktopUpdateActionResult,
   DesktopUpdateCheckResult,
   DesktopUpdateState,
-} from "@t3tools/contracts";
+} from "@bcode/contracts";
 import { autoUpdater } from "electron-updater";
 
-import type { ContextMenuItem } from "@t3tools/contracts";
-import { RotatingFileSink } from "@t3tools/shared/logging";
-import { parsePersistedServerObservabilitySettings } from "@t3tools/shared/serverSettings";
+import type { ContextMenuItem } from "@bcode/contracts";
+import { RotatingFileSink } from "@bcode/shared/logging";
+import { parsePersistedServerObservabilitySettings } from "@bcode/shared/serverSettings";
 import { DEFAULT_DESKTOP_BACKEND_PORT, resolveDesktopBackendPort } from "./backendPort";
 import {
   DEFAULT_DESKTOP_SETTINGS,

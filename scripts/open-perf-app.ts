@@ -72,7 +72,7 @@ function printHelp(): void {
       "",
       "Notes:",
       "  - This launches the built app, not Vite dev mode.",
-      "  - Build artifacts must already exist. Run `bun run test:perf:web` once, or build `@t3tools/web` and `t3` manually.",
+      "  - Build artifacts must already exist. Run `bun run test:perf:web` once, or build `@bcode/web` and `t3` manually.",
       "  - With `--provider dense_assistant_stream`, open the burst thread and send one message to trigger the live multi-thread websocket burst.",
       "",
     ].join("\n"),

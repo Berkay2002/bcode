@@ -11,7 +11,7 @@ import {
   type TerminalEvent,
   WS_METHODS,
   WsRpcGroup,
-} from "@t3tools/contracts";
+} from "@bcode/contracts";
 import {
   Effect,
   Exit,
@@ -28,11 +28,11 @@ import {
   type PerfLatencySample,
   type PerfLatencySummary,
   writeJsonArtifact,
-} from "@t3tools/shared/perf/artifact";
+} from "@bcode/shared/perf/artifact";
 import type {
   PerfProviderScenarioId,
   PerfSeedScenarioId,
-} from "@t3tools/shared/perf/scenarioCatalog";
+} from "@bcode/shared/perf/scenarioCatalog";
 import { seedPerfState, type PerfSeededState } from "./seedPerfState.ts";
 
 const repoRoot = fileURLToPath(new URL("../../../../", import.meta.url));

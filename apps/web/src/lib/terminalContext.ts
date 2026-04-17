@@ -1,4 +1,4 @@
-import { type ThreadId } from "@t3tools/contracts";
+import { type ThreadId } from "@bcode/contracts";
 
 export interface TerminalContextSelection {
   terminalId: string;

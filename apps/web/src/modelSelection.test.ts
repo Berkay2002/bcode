@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ServerProvider } from "@t3tools/contracts";
+import type { ServerProvider } from "@bcode/contracts";
 import { initialClaudeSelection } from "./modelSelection";
 
 function makeClaude(authType: string | undefined): ServerProvider {

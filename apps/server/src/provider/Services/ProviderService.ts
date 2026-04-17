@@ -23,7 +23,7 @@ import type {
   ProviderStopSessionInput,
   ThreadId,
   ProviderTurnStartResult,
-} from "@t3tools/contracts";
+} from "@bcode/contracts";
 import { Context } from "effect";
 import type { Effect, Stream } from "effect";
 
