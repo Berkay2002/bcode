@@ -1,5 +1,5 @@
 import {
-  type ClaudeCodeEffort,
+  type ClaudeAgentEffort,
   DEFAULT_GIT_TEXT_GENERATION_MODEL_BY_PROVIDER,
   type ModelSelection,
   type ProviderKind,
@@ -173,7 +173,7 @@ export function getCustomModelOptionsByProvider(
 
 export function initialClaudeSelection(providers: ReadonlyArray<ServerProvider>): {
   readonly model: string;
-  readonly effort: ClaudeCodeEffort;
+  readonly effort: ClaudeAgentEffort;
 } {
   const claude = providers.find((p) => p.provider === "claudeAgent");
   const { model, effort } = defaultClaudeSelectionForAuth(claude?.auth ?? { status: "unknown" });

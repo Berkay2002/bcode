@@ -41,7 +41,7 @@ import {
   ThreadId,
   TurnId,
   type UserInputQuestion,
-  ClaudeCodeEffort,
+  ClaudeAgentEffort,
   type ModelCapabilities,
   RuntimeMode,
 } from "@t3tools/contracts";
@@ -221,10 +221,10 @@ function isSyntheticClaudeThreadId(value: string): boolean {
   return value.startsWith("claude-thread-");
 }
 
-function getEffectiveClaudeCodeEffort(
+function getEffectiveClaudeAgentEffort(
   caps: ModelCapabilities,
   rawEffort: string | null | undefined,
-): Exclude<ClaudeCodeEffort, "ultrathink"> | null {
+): Exclude<ClaudeAgentEffort, "ultrathink"> | null {
   const promptInjected = new Set(caps.promptInjectedEffortLevels);
   const supportedNonPromptLevels = caps.reasoningEffortLevels
     .map((level) => level.value)
@@ -233,13 +233,13 @@ function getEffectiveClaudeCodeEffort(
   const trimmed = trimOrNull(rawEffort);
 
   if (trimmed && supportedNonPromptLevels.includes(trimmed)) {
-    return trimmed as Exclude<ClaudeCodeEffort, "ultrathink">;
+    return trimmed as Exclude<ClaudeAgentEffort, "ultrathink">;
   }
 
   if (!trimmed) {
     const defaultValue = caps.reasoningEffortLevels.find((level) => level.isDefault)?.value;
     return defaultValue && !promptInjected.has(defaultValue)
-      ? (defaultValue as Exclude<ClaudeCodeEffort, "ultrathink">)
+      ? (defaultValue as Exclude<ClaudeAgentEffort, "ultrathink">)
       : null;
   }
 
@@ -249,7 +249,7 @@ function getEffectiveClaudeCodeEffort(
     return null;
   }
   return supportedNonPromptLevels[supportedNonPromptLevels.length - 1] as Exclude<
-    ClaudeCodeEffort,
+    ClaudeAgentEffort,
     "ultrathink"
   >;
 }
@@ -315,7 +315,7 @@ function maxClaudeContextWindowFromModelUsage(
 }
 
 function normalizeClaudeTokenUsage(
-  value: Record<string, unknown> | undefined,
+  value: unknown,
   contextWindow?: number,
 ): ThreadTokenUsageSnapshot | undefined {
   if (!value || typeof value !== "object") {
@@ -2956,7 +2956,7 @@ const makeClaudeAdapter = Effect.fn("makeClaudeAdapter")(function* (
         typeof modelSelection?.options?.thinking === "boolean" && caps.supportsThinkingToggle
           ? modelSelection.options.thinking
           : undefined;
-      const effectiveEffort = getEffectiveClaudeCodeEffort(caps, modelSelection?.options?.effort);
+      const effectiveEffort = getEffectiveClaudeAgentEffort(caps, modelSelection?.options?.effort);
       const runtimeModeToPermission: Record<RuntimeMode, PermissionMode> = {
         "approval-required": "default",
         "auto-accept-edits": "acceptEdits",
