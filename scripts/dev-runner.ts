@@ -6,7 +6,7 @@ import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { runUserDataMigration } from "@bcode/shared/migration/userDataMigration";
 import { NetService } from "@bcode/shared/Net";
-import { HOME_DIR_NAME } from "@bcode/shared/paths";
+import { HOME_DIR_NAME, isDefaultBcodeHome } from "@bcode/shared/paths";
 import { Config, Data, Effect, Hash, Layer, Logger, Option, Path, Schema } from "effect";
 import { Argument, Command, Flag } from "effect/unstable/cli";
 import { ChildProcess } from "effect/unstable/process";
@@ -428,7 +428,12 @@ interface DevRunnerCliInput {
 
 export function runDevRunnerWithInput(input: DevRunnerCliInput) {
   return Effect.gen(function* () {
-    yield* runUserDataMigration({ homeDir: homedir() }).pipe(Effect.catch(() => Effect.void));
+    // Resolve the effective base dir first so we can skip the ~/.t3 → ~/.bcode
+    // auto-migration when the user has redirected via --home-dir / BCODE_HOME.
+    const effectiveBaseDir = yield* resolveBaseDir(input.bcodeHome);
+    if (isDefaultBcodeHome(effectiveBaseDir, homedir())) {
+      yield* runUserDataMigration({ homeDir: homedir() }).pipe(Effect.catch(() => Effect.void));
+    }
 
     const { portOffset, devInstance } = yield* OffsetConfig.asEffect().pipe(
       Effect.mapError(

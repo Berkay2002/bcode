@@ -2,6 +2,7 @@ import * as OS from "node:os";
 
 import { runUserDataMigration } from "@bcode/shared/migration/userDataMigration";
 import { NetService } from "@bcode/shared/Net";
+import { isDefaultBcodeHome } from "@bcode/shared/paths";
 import { parsePersistedServerObservabilitySettings } from "@bcode/shared/serverSettings";
 import {
   AuthSessionId,
@@ -272,15 +273,6 @@ export const resolveServerConfig = (
     const path = yield* Path.Path;
     const fs = yield* FileSystem.FileSystem;
     const env = yield* EnvServerConfig;
-
-    yield* runUserDataMigration({ homeDir: OS.homedir() }).pipe(
-      Effect.tapError((error) =>
-        Effect.logWarning(
-          `[bcode] User-data migration failed; continuing with existing state. ${error.step} at ${error.path}`,
-        ),
-      ),
-      Effect.catch(() => Effect.void),
-    );
     const normalizedFlags = {
       mode: flags.mode ?? Option.none(),
       port: flags.port ?? Option.none(),
@@ -342,6 +334,22 @@ export const resolveServerConfig = (
         ),
       ),
     );
+
+    // Only auto-migrate ~/.t3 → ~/.bcode when the effective base dir is the
+    // default. If the user has redirected via --base-dir, BCODE_HOME, or a
+    // bootstrap envelope, creating ~/.bcode + marker would be a surprising
+    // side effect on a location the app won't read from.
+    if (isDefaultBcodeHome(baseDir, OS.homedir())) {
+      yield* runUserDataMigration({ homeDir: OS.homedir() }).pipe(
+        Effect.tapError((error) =>
+          Effect.logWarning(
+            `[bcode] User-data migration failed; continuing with existing state. ${error.step} at ${error.path}`,
+          ),
+        ),
+        Effect.catch(() => Effect.void),
+      );
+    }
+
     const rawCwd = Option.getOrElse(normalizedFlags.cwd, () => process.cwd());
     const cwd = path.resolve(yield* expandHomePath(rawCwd.trim()));
     yield* fs.makeDirectory(cwd, { recursive: true });

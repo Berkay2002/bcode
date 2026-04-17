@@ -11,3 +11,13 @@ export function resolveBcodeHome(home: string): string {
 export function resolveLegacyT3Home(home: string): string {
   return Path.join(home, LEGACY_T3_HOME_DIR_NAME);
 }
+
+/**
+ * True when `baseDir` resolves to `~/.bcode` (the default home). Used to skip
+ * auto-migration when the user has explicitly redirected the base dir to
+ * somewhere else — otherwise we would create `~/.bcode` + marker on disk
+ * despite the app never reading from it.
+ */
+export function isDefaultBcodeHome(baseDir: string, home: string): boolean {
+  return Path.resolve(baseDir) === Path.resolve(resolveBcodeHome(home));
+}

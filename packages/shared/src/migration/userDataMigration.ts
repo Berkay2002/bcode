@@ -1,3 +1,5 @@
+import * as NodePath from "node:path";
+
 import { Data, Effect, FileSystem } from "effect";
 
 import { resolveBcodeHome, resolveLegacyT3Home, USER_DATA_MIGRATION_MARKER } from "../paths";
@@ -24,7 +26,7 @@ export const runUserDataMigration = Effect.fn("runUserDataMigration")(function* 
 
   const bcodeHome = resolveBcodeHome(input.homeDir);
   const legacyHome = resolveLegacyT3Home(input.homeDir);
-  const marker = joinPosix(bcodeHome, USER_DATA_MIGRATION_MARKER);
+  const marker = NodePath.join(bcodeHome, USER_DATA_MIGRATION_MARKER);
 
   const markerExists = yield* fs
     .exists(marker)
@@ -77,8 +79,8 @@ const copyTree = Effect.fn("userDataMigration.copyTree")(function* (
 
   while (stack.length > 0) {
     const rel = stack.pop()!;
-    const src = rel.length === 0 ? srcRoot : joinPosix(srcRoot, rel);
-    const dest = rel.length === 0 ? destRoot : joinPosix(destRoot, rel);
+    const src = rel.length === 0 ? srcRoot : NodePath.join(srcRoot, rel);
+    const dest = rel.length === 0 ? destRoot : NodePath.join(destRoot, rel);
 
     const stat = yield* fs
       .stat(src)
@@ -101,7 +103,7 @@ const copyTree = Effect.fn("userDataMigration.copyTree")(function* (
           ),
         );
       for (const entry of entries) {
-        stack.push(rel.length === 0 ? entry : joinPosix(rel, entry));
+        stack.push(rel.length === 0 ? entry : NodePath.join(rel, entry));
       }
       continue;
     }
@@ -130,13 +132,6 @@ const copyTree = Effect.fn("userDataMigration.copyTree")(function* (
 
   return copied;
 });
-
-function joinPosix(a: string, b: string): string {
-  if (a.endsWith("/") || a.endsWith("\\")) {
-    return `${a}${b}`;
-  }
-  return `${a}/${b}`;
-}
 
 function isPermissionError(cause: unknown): boolean {
   if (typeof cause !== "object" || cause === null) return false;
