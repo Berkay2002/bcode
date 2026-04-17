@@ -19,7 +19,7 @@ The server writes structured NDJSON spans to a local trace file — always on du
 tail -f ./dev/logs/server.trace.ndjson
 
 # In production/CLI mode:
-tail -f ~/.t3/userdata/logs/server.trace.ndjson
+tail -f ~/.bcode/userdata/logs/server.trace.ndjson
 ```
 
 Read `@docs/observability.md` for the full set of jq queries. Key ones:

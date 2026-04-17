@@ -164,14 +164,14 @@ bun run test:perf
 ### Watch the automated run in a live browser
 
 ```bash
-T3CODE_PERF_HEADFUL=1 bun run test:perf:web
+BCODE_PERF_HEADFUL=1 bun run test:perf:web
 ```
 
 If you already have fresh build artifacts:
 
 ```bash
 cd apps/web
-T3CODE_PERF_HEADFUL=1 bun run test:perf
+BCODE_PERF_HEADFUL=1 bun run test:perf
 ```
 
 ### Open the seeded app manually for exploration
@@ -241,20 +241,20 @@ Current summary fields:
 To change the artifact output directory for one run:
 
 ```bash
-T3CODE_PERF_ARTIFACT_DIR=/tmp/t3-perf bun run test:perf:web
+BCODE_PERF_ARTIFACT_DIR=/tmp/t3-perf bun run test:perf:web
 ```
 
 ## Internal env vars
 
 These are the perf-specific env vars in the current harness:
 
-- `T3CODE_PERF_HEADFUL=1`
+- `BCODE_PERF_HEADFUL=1`
   - Launch Chromium headed instead of headless.
-- `T3CODE_PERF_ARTIFACT_DIR=/path/to/output`
+- `BCODE_PERF_ARTIFACT_DIR=/path/to/output`
   - Override the artifact directory.
-- `T3CODE_PERF_PROVIDER=1`
+- `BCODE_PERF_PROVIDER=1`
   - Enables the perf provider path on the server.
-- `T3CODE_PERF_SCENARIO=dense_assistant_stream`
+- `BCODE_PERF_SCENARIO=dense_assistant_stream`
   - Selects the live perf provider scenario.
 
 In normal usage, the automated harness and `perf:open` script set the provider env vars for you.
