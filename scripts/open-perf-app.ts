@@ -8,8 +8,8 @@ import { fileURLToPath } from "node:url";
 const repoRoot = fileURLToPath(new URL("../", import.meta.url));
 const serverBinPath = resolve(repoRoot, "apps/server/dist/bin.mjs");
 const serverClientIndexPath = resolve(repoRoot, "apps/server/dist/client/index.html");
-const PERF_PROVIDER_ENV = "T3CODE_PERF_PROVIDER";
-const PERF_SCENARIO_ENV = "T3CODE_PERF_SCENARIO";
+const PERF_PROVIDER_ENV = "BCODE_PERF_PROVIDER";
+const PERF_SCENARIO_ENV = "BCODE_PERF_SCENARIO";
 const PERF_SEED_JSON_START = "__T3_PERF_SEED_JSON_START__";
 const PERF_SEED_JSON_END = "__T3_PERF_SEED_JSON_END__";
 

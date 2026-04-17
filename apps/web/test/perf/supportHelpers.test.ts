@@ -60,7 +60,7 @@ describe("buildPerfServerEnv", () => {
       KEEP_ME: "yes",
     });
 
-    expect(env.T3CODE_AUTO_BOOTSTRAP_PROJECT_FROM_CWD).toBe("false");
+    expect(env.BCODE_AUTO_BOOTSTRAP_PROJECT_FROM_CWD).toBe("false");
     expect(env[PERF_PROVIDER_ENV]).toBeUndefined();
     expect(env[PERF_SCENARIO_ENV]).toBeUndefined();
     expect(env.KEEP_ME).toBe("yes");
@@ -69,7 +69,7 @@ describe("buildPerfServerEnv", () => {
   it("enables the perf provider only when a live provider scenario is requested", () => {
     const env = buildPerfServerEnv({}, "dense_assistant_stream");
 
-    expect(env.T3CODE_AUTO_BOOTSTRAP_PROJECT_FROM_CWD).toBe("false");
+    expect(env.BCODE_AUTO_BOOTSTRAP_PROJECT_FROM_CWD).toBe("false");
     expect(env[PERF_PROVIDER_ENV]).toBe("1");
     expect(env[PERF_SCENARIO_ENV]).toBe("dense_assistant_stream");
   });

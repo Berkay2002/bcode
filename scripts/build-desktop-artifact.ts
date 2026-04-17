@@ -190,18 +190,60 @@ const AzureTrustedSigningOptionsConfig = Config.all({
   ),
 });
 
+// Dual-read shim: prefer BCODE_DESKTOP_<suffix>, fall back to
+// T3CODE_DESKTOP_<suffix> with a per-key console warning. Removed in v0.0.20.
+const DEPRECATED_CONFIG_ENV_WARNED = new Set<string>();
+
+function bcodeDesktopConfigWithFallback<A>(
+  suffix: string,
+  decoder: (key: string) => Config.Config<A>,
+): Config.Config<A> {
+  const nextKey = `BCODE_DESKTOP_${suffix}`;
+  const legacyKey = `T3CODE_DESKTOP_${suffix}`;
+  return decoder(nextKey).pipe(
+    Config.orElse(() =>
+      decoder(legacyKey).pipe(
+        Config.map((value) => {
+          if (!DEPRECATED_CONFIG_ENV_WARNED.has(legacyKey)) {
+            DEPRECATED_CONFIG_ENV_WARNED.add(legacyKey);
+            console.warn(
+              `[bcode] Environment variable ${legacyKey} is deprecated and will be removed in v0.0.20. Rename it to ${nextKey}.`,
+            );
+          }
+          return value;
+        }),
+      ),
+    ),
+  );
+}
+
 const BuildEnvConfig = Config.all({
-  platform: Config.schema(BuildPlatform, "T3CODE_DESKTOP_PLATFORM").pipe(Config.option),
-  target: Config.string("T3CODE_DESKTOP_TARGET").pipe(Config.option),
-  arch: Config.schema(BuildArch, "T3CODE_DESKTOP_ARCH").pipe(Config.option),
-  version: Config.string("T3CODE_DESKTOP_VERSION").pipe(Config.option),
-  outputDir: Config.string("T3CODE_DESKTOP_OUTPUT_DIR").pipe(Config.option),
-  skipBuild: Config.boolean("T3CODE_DESKTOP_SKIP_BUILD").pipe(Config.withDefault(false)),
-  keepStage: Config.boolean("T3CODE_DESKTOP_KEEP_STAGE").pipe(Config.withDefault(false)),
-  signed: Config.boolean("T3CODE_DESKTOP_SIGNED").pipe(Config.withDefault(false)),
-  verbose: Config.boolean("T3CODE_DESKTOP_VERBOSE").pipe(Config.withDefault(false)),
-  mockUpdates: Config.boolean("T3CODE_DESKTOP_MOCK_UPDATES").pipe(Config.withDefault(false)),
-  mockUpdateServerPort: Config.string("T3CODE_DESKTOP_MOCK_UPDATE_SERVER_PORT").pipe(Config.option),
+  platform: bcodeDesktopConfigWithFallback("PLATFORM", (key) =>
+    Config.schema(BuildPlatform, key),
+  ).pipe(Config.option),
+  target: bcodeDesktopConfigWithFallback("TARGET", Config.string).pipe(Config.option),
+  arch: bcodeDesktopConfigWithFallback("ARCH", (key) => Config.schema(BuildArch, key)).pipe(
+    Config.option,
+  ),
+  version: bcodeDesktopConfigWithFallback("VERSION", Config.string).pipe(Config.option),
+  outputDir: bcodeDesktopConfigWithFallback("OUTPUT_DIR", Config.string).pipe(Config.option),
+  skipBuild: bcodeDesktopConfigWithFallback("SKIP_BUILD", Config.boolean).pipe(
+    Config.withDefault(false),
+  ),
+  keepStage: bcodeDesktopConfigWithFallback("KEEP_STAGE", Config.boolean).pipe(
+    Config.withDefault(false),
+  ),
+  signed: bcodeDesktopConfigWithFallback("SIGNED", Config.boolean).pipe(Config.withDefault(false)),
+  verbose: bcodeDesktopConfigWithFallback("VERBOSE", Config.boolean).pipe(
+    Config.withDefault(false),
+  ),
+  mockUpdates: bcodeDesktopConfigWithFallback("MOCK_UPDATES", Config.boolean).pipe(
+    Config.withDefault(false),
+  ),
+  mockUpdateServerPort: bcodeDesktopConfigWithFallback(
+    "MOCK_UPDATE_SERVER_PORT",
+    Config.string,
+  ).pipe(Config.option),
 });
 
 const MockUpdateServerPortSchema = Schema.NumberFromString.check(
@@ -462,6 +504,7 @@ function resolveGitHubPublishConfig(updateChannel: "latest" | "nightly"):
     }
   | undefined {
   const rawRepo =
+    process.env.BCODE_DESKTOP_UPDATE_REPOSITORY?.trim() ||
     process.env.T3CODE_DESKTOP_UPDATE_REPOSITORY?.trim() ||
     process.env.GITHUB_REPOSITORY?.trim() ||
     "";
@@ -839,54 +882,54 @@ const buildDesktopArtifact = Effect.fn("buildDesktopArtifact")(function* (
 
 const buildDesktopArtifactCli = Command.make("build-desktop-artifact", {
   platform: Flag.choice("platform", BuildPlatform.literals).pipe(
-    Flag.withDescription("Build platform (env: T3CODE_DESKTOP_PLATFORM)."),
+    Flag.withDescription("Build platform (env: BCODE_DESKTOP_PLATFORM)."),
     Flag.optional,
   ),
   target: Flag.string("target").pipe(
     Flag.withDescription(
-      "Artifact target, for example dmg/AppImage/nsis (env: T3CODE_DESKTOP_TARGET).",
+      "Artifact target, for example dmg/AppImage/nsis (env: BCODE_DESKTOP_TARGET).",
     ),
     Flag.optional,
   ),
   arch: Flag.choice("arch", BuildArch.literals).pipe(
-    Flag.withDescription("Build arch, for example arm64/x64/universal (env: T3CODE_DESKTOP_ARCH)."),
+    Flag.withDescription("Build arch, for example arm64/x64/universal (env: BCODE_DESKTOP_ARCH)."),
     Flag.optional,
   ),
   buildVersion: Flag.string("build-version").pipe(
-    Flag.withDescription("Artifact version metadata (env: T3CODE_DESKTOP_VERSION)."),
+    Flag.withDescription("Artifact version metadata (env: BCODE_DESKTOP_VERSION)."),
     Flag.optional,
   ),
   outputDir: Flag.string("output-dir").pipe(
-    Flag.withDescription("Output directory for artifacts (env: T3CODE_DESKTOP_OUTPUT_DIR)."),
+    Flag.withDescription("Output directory for artifacts (env: BCODE_DESKTOP_OUTPUT_DIR)."),
     Flag.optional,
   ),
   skipBuild: Flag.boolean("skip-build").pipe(
     Flag.withDescription(
-      "Skip `bun run build:desktop` and use existing dist artifacts (env: T3CODE_DESKTOP_SKIP_BUILD).",
+      "Skip `bun run build:desktop` and use existing dist artifacts (env: BCODE_DESKTOP_SKIP_BUILD).",
     ),
     Flag.optional,
   ),
   keepStage: Flag.boolean("keep-stage").pipe(
-    Flag.withDescription("Keep temporary staging files (env: T3CODE_DESKTOP_KEEP_STAGE)."),
+    Flag.withDescription("Keep temporary staging files (env: BCODE_DESKTOP_KEEP_STAGE)."),
     Flag.optional,
   ),
   signed: Flag.boolean("signed").pipe(
     Flag.withDescription(
-      "Enable signing/notarization discovery; Windows uses Azure Trusted Signing (env: T3CODE_DESKTOP_SIGNED).",
+      "Enable signing/notarization discovery; Windows uses Azure Trusted Signing (env: BCODE_DESKTOP_SIGNED).",
     ),
     Flag.optional,
   ),
   verbose: Flag.boolean("verbose").pipe(
-    Flag.withDescription("Stream subprocess stdout (env: T3CODE_DESKTOP_VERBOSE)."),
+    Flag.withDescription("Stream subprocess stdout (env: BCODE_DESKTOP_VERBOSE)."),
     Flag.optional,
   ),
   mockUpdates: Flag.boolean("mock-updates").pipe(
-    Flag.withDescription("Enable mock updates (env: T3CODE_DESKTOP_MOCK_UPDATES)."),
+    Flag.withDescription("Enable mock updates (env: BCODE_DESKTOP_MOCK_UPDATES)."),
     Flag.optional,
   ),
   mockUpdateServerPort: Flag.integer("mock-update-server-port").pipe(
     Flag.withSchema(Schema.Int.check(Schema.isBetween({ minimum: 1, maximum: 65535 }))),
-    Flag.withDescription("Mock update server port (env: T3CODE_DESKTOP_MOCK_UPDATE_SERVER_PORT)."),
+    Flag.withDescription("Mock update server port (env: BCODE_DESKTOP_MOCK_UPDATE_SERVER_PORT)."),
     Flag.optional,
   ),
 }).pipe(

@@ -1,8 +1,8 @@
 import type { PerfProviderScenarioId } from "@bcode/shared/perf/scenarioCatalog";
 
-export const PERF_PROVIDER_ENV = "T3CODE_PERF_PROVIDER";
-export const PERF_SCENARIO_ENV = "T3CODE_PERF_SCENARIO";
-const AUTO_BOOTSTRAP_PROJECT_ENV = "T3CODE_AUTO_BOOTSTRAP_PROJECT_FROM_CWD";
+export const PERF_PROVIDER_ENV = "BCODE_PERF_PROVIDER";
+export const PERF_SCENARIO_ENV = "BCODE_PERF_SCENARIO";
+const AUTO_BOOTSTRAP_PROJECT_ENV = "BCODE_AUTO_BOOTSTRAP_PROJECT_FROM_CWD";
 
 export function buildPerfServerEnv(
   baseEnv: NodeJS.ProcessEnv,

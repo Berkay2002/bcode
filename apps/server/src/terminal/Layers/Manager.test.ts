@@ -872,7 +872,7 @@ it.layer(NodeServices.layer, { excludeTestServices: true })("TerminalManager", (
       };
 
       setEnv("PORT", "5173");
-      setEnv("T3CODE_PORT", "3773");
+      setEnv("BCODE_PORT", "3773");
       setEnv("VITE_DEV_SERVER_URL", "http://localhost:5173");
       setEnv("TEST_TERMINAL_KEEP", "keep-me");
 
@@ -884,7 +884,7 @@ it.layer(NodeServices.layer, { excludeTestServices: true })("TerminalManager", (
         if (!spawnInput) return;
 
         expect(spawnInput.env.PORT).toBeUndefined();
-        expect(spawnInput.env.T3CODE_PORT).toBeUndefined();
+        expect(spawnInput.env.BCODE_PORT).toBeUndefined();
         expect(spawnInput.env.VITE_DEV_SERVER_URL).toBeUndefined();
         expect(spawnInput.env.TEST_TERMINAL_KEEP).toBe("keep-me");
       } finally {
@@ -899,8 +899,8 @@ it.layer(NodeServices.layer, { excludeTestServices: true })("TerminalManager", (
       yield* manager.open(
         openInput({
           env: {
-            T3CODE_PROJECT_ROOT: "/repo",
-            T3CODE_WORKTREE_PATH: "/repo/worktree-a",
+            BCODE_PROJECT_ROOT: "/repo",
+            BCODE_WORKTREE_PATH: "/repo/worktree-a",
             CUSTOM_FLAG: "1",
           },
         }),
@@ -909,8 +909,8 @@ it.layer(NodeServices.layer, { excludeTestServices: true })("TerminalManager", (
       expect(spawnInput).toBeDefined();
       if (!spawnInput) return;
 
-      assert.equal(spawnInput.env.T3CODE_PROJECT_ROOT, "/repo");
-      assert.equal(spawnInput.env.T3CODE_WORKTREE_PATH, "/repo/worktree-a");
+      assert.equal(spawnInput.env.BCODE_PROJECT_ROOT, "/repo");
+      assert.equal(spawnInput.env.BCODE_WORKTREE_PATH, "/repo/worktree-a");
       assert.equal(spawnInput.env.CUSTOM_FLAG, "1");
     }),
   );

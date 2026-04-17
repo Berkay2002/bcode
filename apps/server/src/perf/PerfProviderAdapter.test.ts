@@ -4,7 +4,7 @@ import { PERF_CATALOG_IDS } from "@bcode/shared/perf/scenarioCatalog";
 
 import { makePerfProviderAdapter } from "./PerfProviderAdapter.ts";
 
-const PERF_SCENARIO_ENV = "T3CODE_PERF_SCENARIO";
+const PERF_SCENARIO_ENV = "BCODE_PERF_SCENARIO";
 const STREAM_SAMPLE_EVENT_COUNT = 96;
 
 describe("PerfProviderAdapter", () => {

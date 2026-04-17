@@ -33,8 +33,8 @@ import { buildPerfServerEnv } from "./serverEnv";
 const repoRoot = fileURLToPath(new URL("../../../../", import.meta.url));
 const serverBinPath = resolve(repoRoot, "apps/server/dist/bin.mjs");
 const serverClientIndexPath = resolve(repoRoot, "apps/server/dist/client/index.html");
-const PERF_ARTIFACT_DIR_ENV = "T3CODE_PERF_ARTIFACT_DIR";
-const PERF_HEADFUL_ENV = "T3CODE_PERF_HEADFUL";
+const PERF_ARTIFACT_DIR_ENV = "BCODE_PERF_ARTIFACT_DIR";
+const PERF_HEADFUL_ENV = "BCODE_PERF_HEADFUL";
 const PERF_SEED_JSON_START = "__T3_PERF_SEED_JSON_START__";
 const PERF_SEED_JSON_END = "__T3_PERF_SEED_JSON_END__";
 
