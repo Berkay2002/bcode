@@ -503,11 +503,19 @@ function resolveGitHubPublishConfig(updateChannel: "latest" | "nightly"):
       readonly channel?: "nightly";
     }
   | undefined {
-  const rawRepo =
-    process.env.BCODE_DESKTOP_UPDATE_REPOSITORY?.trim() ||
-    process.env.T3CODE_DESKTOP_UPDATE_REPOSITORY?.trim() ||
-    process.env.GITHUB_REPOSITORY?.trim() ||
-    "";
+  const bcodeRepo = process.env.BCODE_DESKTOP_UPDATE_REPOSITORY?.trim();
+  const legacyRepo = process.env.T3CODE_DESKTOP_UPDATE_REPOSITORY?.trim();
+  if (
+    !bcodeRepo &&
+    legacyRepo &&
+    !DEPRECATED_CONFIG_ENV_WARNED.has("T3CODE_DESKTOP_UPDATE_REPOSITORY")
+  ) {
+    DEPRECATED_CONFIG_ENV_WARNED.add("T3CODE_DESKTOP_UPDATE_REPOSITORY");
+    console.warn(
+      "[bcode] Environment variable T3CODE_DESKTOP_UPDATE_REPOSITORY is deprecated and will be removed in v0.0.20. Rename it to BCODE_DESKTOP_UPDATE_REPOSITORY.",
+    );
+  }
+  const rawRepo = bcodeRepo || legacyRepo || process.env.GITHUB_REPOSITORY?.trim() || "";
   if (!rawRepo) return undefined;
 
   const [owner, repo, ...rest] = rawRepo.split("/");
