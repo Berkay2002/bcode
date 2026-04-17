@@ -1,5 +1,5 @@
 {
-  "name": "@t3tools/desktop",
+  "name": "@bcode/desktop",
   "version": "0.0.18",
   "private": true,
   "main": "dist-electron/main.js",

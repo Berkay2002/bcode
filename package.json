@@ -1,5 +1,5 @@
 {
-  "name": "@t3tools/monorepo",
+  "name": "@bcode/monorepo",
   "private": true,
   "workspaces": {
     "packages": [
