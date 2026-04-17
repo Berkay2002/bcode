@@ -114,7 +114,7 @@ const desktopAppBranding: DesktopAppBranding = resolveDesktopAppBranding({
   appVersion: app.getVersion(),
 });
 const APP_DISPLAY_NAME = desktopAppBranding.displayName;
-const APP_USER_MODEL_ID = isDevelopment ? "com.t3tools.t3code.dev" : "com.t3tools.t3code";
+const APP_USER_MODEL_ID = isDevelopment ? "com.berkayorhan.bcode.dev" : "com.berkayorhan.bcode";
 const LINUX_DESKTOP_ENTRY_NAME = isDevelopment ? "t3code-dev.desktop" : "t3code.desktop";
 const LINUX_WM_CLASS = isDevelopment ? "t3code-dev" : "t3code";
 const USER_DATA_DIR_NAME = isDevelopment ? "t3code-dev" : "t3code";
