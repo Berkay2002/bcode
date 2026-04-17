@@ -123,22 +123,30 @@ const BUILT_IN_MODELS: ReadonlyArray<ServerProviderModel> = [
   },
 ];
 
-function supportsClaudeOpus47(version: string | null | undefined): boolean {
-  return version ? compareCliVersions(version, MINIMUM_CLAUDE_OPUS_4_7_VERSION) >= 0 : false;
+type ClaudeOpus47Support = "supported" | "too-old" | "unknown";
+
+function getClaudeOpus47Support(version: string | null | undefined): ClaudeOpus47Support {
+  if (!version) {
+    return "unknown";
+  }
+  return compareCliVersions(version, MINIMUM_CLAUDE_OPUS_4_7_VERSION) >= 0
+    ? "supported"
+    : "too-old";
 }
 
 function getBuiltInClaudeModelsForVersion(
   version: string | null | undefined,
 ): ReadonlyArray<ServerProviderModel> {
-  if (supportsClaudeOpus47(version)) {
-    return BUILT_IN_MODELS;
+  // When version is unknown (parse failed), err on the side of exposing the
+  // model rather than hiding a feature from users whose CLI output shifted.
+  if (getClaudeOpus47Support(version) === "too-old") {
+    return BUILT_IN_MODELS.filter((model) => model.slug !== "claude-opus-4-7");
   }
-  return BUILT_IN_MODELS.filter((model) => model.slug !== "claude-opus-4-7");
+  return BUILT_IN_MODELS;
 }
 
-function formatClaudeOpus47UpgradeMessage(version: string | null): string {
-  const versionLabel = version ? `v${version}` : "the installed version";
-  return `Claude Code ${versionLabel} is too old for Claude Opus 4.7. Upgrade to v${MINIMUM_CLAUDE_OPUS_4_7_VERSION} or newer to access it.`;
+function formatClaudeOpus47UpgradeMessage(version: string): string {
+  return `Claude Code v${version} is too old for Claude Opus 4.7. Upgrade to v${MINIMUM_CLAUDE_OPUS_4_7_VERSION} or newer to access it.`;
 }
 
 export function getClaudeModelCapabilities(model: string | null | undefined): ModelCapabilities {
@@ -624,9 +632,10 @@ export const checkClaudeProviderStatus = Effect.fn("checkClaudeProviderStatus")(
     claudeSettings.customModels,
     DEFAULT_CLAUDE_MODEL_CAPABILITIES,
   );
-  const opus47UpgradeMessage = supportsClaudeOpus47(parsedVersion)
-    ? undefined
-    : formatClaudeOpus47UpgradeMessage(parsedVersion);
+  const opus47UpgradeMessage =
+    getClaudeOpus47Support(parsedVersion) === "too-old" && parsedVersion
+      ? formatClaudeOpus47UpgradeMessage(parsedVersion)
+      : undefined;
 
   const slashCommands =
     (resolveSlashCommands
