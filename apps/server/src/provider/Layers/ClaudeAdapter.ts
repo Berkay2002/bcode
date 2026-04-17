@@ -42,12 +42,12 @@ import {
   TurnId,
   type UserInputQuestion,
   ClaudeAgentEffort,
+  type ModelCapabilities,
   RuntimeMode,
 } from "@t3tools/contracts";
 import {
   applyClaudePromptEffortPrefix,
   resolveApiModelId,
-  resolveEffort,
   trimOrNull,
 } from "@t3tools/shared/model";
 import {
@@ -222,12 +222,36 @@ function isSyntheticClaudeThreadId(value: string): boolean {
 }
 
 function getEffectiveClaudeAgentEffort(
-  effort: ClaudeAgentEffort | null | undefined,
+  caps: ModelCapabilities,
+  rawEffort: string | null | undefined,
 ): Exclude<ClaudeAgentEffort, "ultrathink"> | null {
-  if (!effort) {
+  const promptInjected = new Set(caps.promptInjectedEffortLevels);
+  const supportedNonPromptLevels = caps.reasoningEffortLevels
+    .map((level) => level.value)
+    .filter((value) => !promptInjected.has(value));
+
+  const trimmed = trimOrNull(rawEffort);
+
+  if (trimmed && supportedNonPromptLevels.includes(trimmed)) {
+    return trimmed as Exclude<ClaudeAgentEffort, "ultrathink">;
+  }
+
+  if (!trimmed) {
+    const defaultValue = caps.reasoningEffortLevels.find((level) => level.isDefault)?.value;
+    return defaultValue && !promptInjected.has(defaultValue)
+      ? (defaultValue as Exclude<ClaudeAgentEffort, "ultrathink">)
+      : null;
+  }
+
+  // Raw effort is unsupported (e.g. "max" on Sonnet 4.6) or prompt-injected
+  // (e.g. "ultrathink"); cap to the highest supported non-prompt-injected level.
+  if (supportedNonPromptLevels.length === 0) {
     return null;
   }
-  return effort === "ultrathink" ? null : effort;
+  return supportedNonPromptLevels[supportedNonPromptLevels.length - 1] as Exclude<
+    ClaudeAgentEffort,
+    "ultrathink"
+  >;
 }
 
 function isClaudeInterruptedMessage(message: string): boolean {
@@ -2927,14 +2951,12 @@ const makeClaudeAdapter = Effect.fn("makeClaudeAdapter")(function* (
         input.modelSelection?.provider === "claudeAgent" ? input.modelSelection : undefined;
       const caps = getClaudeModelCapabilities(modelSelection?.model);
       const apiModelId = modelSelection ? resolveApiModelId(modelSelection) : undefined;
-      const effort = (resolveEffort(caps, modelSelection?.options?.effort) ??
-        null) as ClaudeAgentEffort | null;
       const fastMode = modelSelection?.options?.fastMode === true && caps.supportsFastMode;
       const thinking =
         typeof modelSelection?.options?.thinking === "boolean" && caps.supportsThinkingToggle
           ? modelSelection.options.thinking
           : undefined;
-      const effectiveEffort = getEffectiveClaudeAgentEffort(effort);
+      const effectiveEffort = getEffectiveClaudeAgentEffort(caps, modelSelection?.options?.effort);
       const runtimeModeToPermission: Record<RuntimeMode, PermissionMode> = {
         "approval-required": "default",
         "auto-accept-edits": "acceptEdits",
