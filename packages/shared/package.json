@@ -87,7 +87,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@t3tools/contracts": "workspace:*",
+    "@bcode/contracts": "workspace:*",
     "effect": "catalog:"
   },
   "devDependencies": {
