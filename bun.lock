@@ -16,6 +16,7 @@
       "name": "@bcode/desktop",
       "version": "0.0.18",
       "dependencies": {
+        "@effect/platform-node": "catalog:",
         "effect": "catalog:",
         "electron": "40.6.0",
         "electron-updater": "^6.6.2",
@@ -157,6 +158,7 @@
       },
       "devDependencies": {
         "@effect/language-service": "catalog:",
+        "@effect/platform-node": "catalog:",
         "@effect/vitest": "catalog:",
         "@types/node": "catalog:",
         "typescript": "catalog:",

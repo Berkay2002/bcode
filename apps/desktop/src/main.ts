@@ -36,7 +36,11 @@ import { autoUpdater } from "electron-updater";
 import type { ContextMenuItem } from "@bcode/contracts";
 import { readEnv } from "@bcode/shared/env";
 import { RotatingFileSink } from "@bcode/shared/logging";
+import { runUserDataMigration } from "@bcode/shared/migration/userDataMigration";
+import { HOME_DIR_NAME, isDefaultBcodeHome } from "@bcode/shared/paths";
 import { parsePersistedServerObservabilitySettings } from "@bcode/shared/serverSettings";
+import * as NodeFileSystem from "@effect/platform-node/NodeFileSystem";
+import * as Effect from "effect/Effect";
 import { DEFAULT_DESKTOP_BACKEND_PORT, resolveDesktopBackendPort } from "./backendPort";
 import {
   DEFAULT_DESKTOP_SETTINGS,
@@ -78,6 +82,25 @@ import { resolveDesktopAppBranding } from "./appBranding";
 
 syncShellEnvironment();
 
+function runMigrationSync(): void {
+  try {
+    Effect.runSync(
+      runUserDataMigration({ homeDir: OS.homedir() }).pipe(
+        Effect.provide(NodeFileSystem.layer),
+        Effect.catch((error) =>
+          Effect.sync(() =>
+            console.warn(
+              `[bcode] User-data migration failed (${error.step} at ${error.path}); continuing.`,
+            ),
+          ),
+        ),
+      ),
+    );
+  } catch (error) {
+    console.warn("[bcode] User-data migration threw unexpectedly; continuing.", error);
+  }
+}
+
 const PICK_FOLDER_CHANNEL = "desktop:pick-folder";
 const CONFIRM_CHANNEL = "desktop:confirm";
 const SET_THEME_CHANNEL = "desktop:set-theme";
@@ -101,7 +124,13 @@ const SET_SAVED_ENVIRONMENT_SECRET_CHANNEL = "desktop:set-saved-environment-secr
 const REMOVE_SAVED_ENVIRONMENT_SECRET_CHANNEL = "desktop:remove-saved-environment-secret";
 const GET_SERVER_EXPOSURE_STATE_CHANNEL = "desktop:get-server-exposure-state";
 const SET_SERVER_EXPOSURE_MODE_CHANNEL = "desktop:set-server-exposure-mode";
-const BASE_DIR = readEnv("HOME")?.trim() || Path.join(OS.homedir(), ".t3");
+const BASE_DIR = readEnv("HOME")?.trim() || Path.join(OS.homedir(), HOME_DIR_NAME);
+// Only auto-migrate when the effective base dir is the default ~/.bcode.
+// Honoring BCODE_HOME=<custom> means skipping, otherwise we'd seed a marker +
+// directory in ~/.bcode that the app never reads from.
+if (isDefaultBcodeHome(BASE_DIR, OS.homedir())) {
+  runMigrationSync();
+}
 const STATE_DIR = Path.join(BASE_DIR, "userdata");
 const DESKTOP_SETTINGS_PATH = Path.join(STATE_DIR, "desktop-settings.json");
 const CLIENT_SETTINGS_PATH = Path.join(STATE_DIR, "client-settings.json");

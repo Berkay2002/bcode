@@ -47,7 +47,7 @@ it.layer(NodeServices.layer)("dev-runner", (it) => {
   });
 
   describe("createDevRunnerEnv", () => {
-    it.effect("defaults BCODE_HOME to ~/.t3 when not provided", () =>
+    it.effect("defaults BCODE_HOME to ~/.bcode when not provided", () =>
       Effect.gen(function* () {
         const env = yield* createDevRunnerEnv({
           mode: "dev",
@@ -63,7 +63,7 @@ it.layer(NodeServices.layer)("dev-runner", (it) => {
           devUrl: undefined,
         });
 
-        assert.equal(env.BCODE_HOME, resolve(homedir(), ".t3"));
+        assert.equal(env.BCODE_HOME, resolve(homedir(), ".bcode"));
       }),
     );
 

@@ -1,3 +1,8 @@
+// Side-effect import: runs t3code:* -> bcode:* localStorage migration before any
+// store module (zustand `create(...)`, `useTheme`, etc.) reads from storage at
+// module-init time. Must stay first.
+import "./migration/bootstrap";
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider } from "@tanstack/react-router";

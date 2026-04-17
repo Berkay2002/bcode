@@ -195,13 +195,13 @@ function createBaseServerConfig(): ServerConfig {
       sessionCookieName: "t3_session",
     },
     cwd: "/repo/project",
-    keybindingsConfigPath: "/repo/project/.t3code-keybindings.json",
+    keybindingsConfigPath: "/repo/project/.bcode-keybindings.json",
     keybindings: [],
     issues: [],
     providers: [],
     availableEditors: ["cursor"],
     observability: {
-      logsDirectoryPath: "/repo/project/.t3/logs",
+      logsDirectoryPath: "/repo/project/.bcode/logs",
       localTracingEnabled: true,
       otlpTracesUrl: "http://localhost:4318/v1/traces",
       otlpTracesEnabled: true,
@@ -452,7 +452,7 @@ describe("GeneralSettingsPanel observability", () => {
     await expect.element(page.getByText("Diagnostics")).toBeInTheDocument();
     await expect.element(page.getByText("Open logs folder")).toBeInTheDocument();
     await expect
-      .element(page.getByText("/repo/project/.t3/logs", { exact: true }))
+      .element(page.getByText("/repo/project/.bcode/logs", { exact: true }))
       .toBeInTheDocument();
     await expect
       .element(
@@ -709,7 +709,7 @@ describe("GeneralSettingsPanel observability", () => {
     const openLogsButton = page.getByText("Open logs folder");
     await openLogsButton.click();
 
-    expect(openInEditor).toHaveBeenCalledWith("/repo/project/.t3/logs", "cursor");
+    expect(openInEditor).toHaveBeenCalledWith("/repo/project/.bcode/logs", "cursor");
   });
 
   it("renders both provider usage-limit rows when both windows exist", async () => {
