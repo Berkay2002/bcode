@@ -21,7 +21,7 @@ import {
   TerminalSessionLookupError,
   TerminalSessionStatus,
   TerminalWriteInput,
-} from "@t3tools/contracts";
+} from "@bcode/contracts";
 import { PtyProcess } from "./PTY";
 import { Effect, Context } from "effect";
 

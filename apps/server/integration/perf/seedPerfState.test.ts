@@ -3,7 +3,7 @@ import { join } from "node:path";
 
 import { afterEach, describe, expect, it } from "vitest";
 
-import { PERF_CATALOG_IDS, getPerfSeedScenario } from "@t3tools/shared/perf/scenarioCatalog";
+import { PERF_CATALOG_IDS, getPerfSeedScenario } from "@bcode/shared/perf/scenarioCatalog";
 import { seedPerfState } from "./seedPerfState.ts";
 
 describe("seedPerfState", () => {

@@ -7,10 +7,10 @@ import type {
   ServerProviderSlashCommand,
   ServerProviderState,
   ServerProviderUsageLimits,
-} from "@t3tools/contracts";
+} from "@bcode/contracts";
 import { Cache, Duration, Effect, Equal, Layer, Option, Result, Schema, Stream } from "effect";
 import { ChildProcess, ChildProcessSpawner } from "effect/unstable/process";
-import { decodeJsonResult } from "@t3tools/shared/schemaJson";
+import { decodeJsonResult } from "@bcode/shared/schemaJson";
 import {
   query as claudeQuery,
   type SlashCommand as ClaudeSlashCommand,
@@ -31,7 +31,7 @@ import { compareCliVersions } from "../cliVersion";
 import { makeManagedServerProvider } from "../makeManagedServerProvider";
 import { ClaudeProvider } from "../Services/ClaudeProvider";
 import { ServerSettingsService } from "../../serverSettings";
-import { ServerSettingsError } from "@t3tools/contracts";
+import { ServerSettingsError } from "@bcode/contracts";
 import { readPersistedProviderUsageLimits } from "../providerUsageLimits";
 import { ProviderUsageLimitsRepository } from "../../persistence/Services/ProviderUsageLimits.ts";
 

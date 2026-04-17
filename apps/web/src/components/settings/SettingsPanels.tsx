@@ -17,10 +17,10 @@ import {
   type ProviderKind,
   type ServerProvider,
   type ServerProviderModel,
-} from "@t3tools/contracts";
-import { scopeThreadRef } from "@t3tools/client-runtime";
-import { DEFAULT_UNIFIED_SETTINGS } from "@t3tools/contracts/settings";
-import { normalizeModelSlug } from "@t3tools/shared/model";
+} from "@bcode/contracts";
+import { scopeThreadRef } from "@bcode/client-runtime";
+import { DEFAULT_UNIFIED_SETTINGS } from "@bcode/contracts/settings";
+import { normalizeModelSlug } from "@bcode/shared/model";
 import { Equal } from "effect";
 import { APP_VERSION } from "../../branding";
 import {

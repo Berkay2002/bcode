@@ -13,14 +13,14 @@ import {
   type ProviderTurnStartResult,
   type ProviderUserInputAnswers,
   type ThreadId,
-} from "@t3tools/contracts";
+} from "@bcode/contracts";
 import { Effect, Queue, Stream } from "effect";
 
 import {
   getPerfProviderScenario,
   type PerfProviderScenario,
   type TimedFixtureProviderRuntimeEvent,
-} from "@t3tools/shared/perf/scenarioCatalog";
+} from "@bcode/shared/perf/scenarioCatalog";
 import {
   ProviderAdapterSessionNotFoundError,
   ProviderAdapterValidationError,

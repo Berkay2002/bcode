@@ -3,7 +3,7 @@ import {
   scopedThreadKey,
   scopeProjectRef,
   scopeThreadRef,
-} from "@t3tools/client-runtime";
+} from "@bcode/client-runtime";
 import * as Schema from "effect/Schema";
 import {
   DEFAULT_UNIFIED_SETTINGS,
@@ -13,7 +13,7 @@ import {
   ThreadId,
   type ModelSelection,
   type ProviderModelOptions,
-} from "@t3tools/contracts";
+} from "@bcode/contracts";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {

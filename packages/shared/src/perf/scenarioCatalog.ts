@@ -8,7 +8,7 @@ import {
   type ModelSelection,
   type ProviderKind,
   type ProviderRuntimeEvent,
-} from "@t3tools/contracts";
+} from "@bcode/contracts";
 
 export type PerfSeedScenarioId = "large_threads" | "burst_base";
 export type PerfProviderScenarioId = "dense_assistant_stream" | "parallel_assistant_stream";

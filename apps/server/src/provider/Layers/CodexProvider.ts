@@ -8,7 +8,7 @@ import type {
   ServerProviderSkill,
   ServerProviderState,
   ServerProviderUsageLimits,
-} from "@t3tools/contracts";
+} from "@bcode/contracts";
 import {
   Cache,
   Duration,
@@ -49,7 +49,7 @@ import {
 import { probeCodexDiscovery, type CodexDiscoveryState } from "../codexAppServer";
 import { CodexProvider } from "../Services/CodexProvider";
 import { ServerSettingsService } from "../../serverSettings";
-import { ServerSettingsError } from "@t3tools/contracts";
+import { ServerSettingsError } from "@bcode/contracts";
 import {
   normalizeCodexUsageLimits,
   readPersistedProviderUsageLimits,

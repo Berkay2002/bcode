@@ -15,8 +15,8 @@ import {
   ThreadId,
   type ThreadId as ThreadIdType,
   WS_METHODS,
-} from "@t3tools/contracts";
-import { PERF_CATALOG_IDS } from "@t3tools/shared/perf/scenarioCatalog";
+} from "@bcode/contracts";
+import { PERF_CATALOG_IDS } from "@bcode/shared/perf/scenarioCatalog";
 import { afterEach, describe, expect, it } from "vitest";
 
 import {
@@ -27,7 +27,7 @@ import {
   type ServerPerfHarness,
   type ServerRpcLatencySeries,
 } from "./serverPerfHarness.ts";
-import type { PerfLatencySample } from "@t3tools/shared/perf/artifact";
+import type { PerfLatencySample } from "@bcode/shared/perf/artifact";
 
 const CONTROL_PLANE_SAMPLE_COUNT = 4;
 const GIT_RPC_SAMPLE_COUNT = 6;

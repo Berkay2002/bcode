@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { Effect, Stream } from "effect";
-import { PERF_CATALOG_IDS } from "@t3tools/shared/perf/scenarioCatalog";
+import { PERF_CATALOG_IDS } from "@bcode/shared/perf/scenarioCatalog";
 
 import { makePerfProviderAdapter } from "./PerfProviderAdapter.ts";
 

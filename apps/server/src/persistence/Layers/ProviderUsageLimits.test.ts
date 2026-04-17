@@ -1,7 +1,7 @@
 import { assert, it } from "@effect/vitest";
 import { Effect, Layer, Option } from "effect";
 
-import type { ServerProviderUsageLimits } from "@t3tools/contracts";
+import type { ServerProviderUsageLimits } from "@bcode/contracts";
 import { ProviderUsageLimitsRepository } from "../Services/ProviderUsageLimits.ts";
 import { ProviderUsageLimitsRepositoryLive } from "./ProviderUsageLimits.ts";
 import { SqlitePersistenceMemory } from "./Sqlite.ts";

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { resolveSelectableProvider } from "./providerModels";
-import type { ServerProvider } from "@t3tools/contracts";
+import type { ServerProvider } from "@bcode/contracts";
 
 /** Minimal helper to build a ServerProvider stub for testing. */
 function makeProvider(

@@ -20,7 +20,7 @@ import {
   type SDKUserMessage,
   ModelUsage,
 } from "@anthropic-ai/claude-agent-sdk";
-import { parseCliArgs } from "@t3tools/shared/cliArgs";
+import { parseCliArgs } from "@bcode/shared/cliArgs";
 import {
   ApprovalRequestId,
   type CanonicalItemType,
@@ -44,12 +44,12 @@ import {
   ClaudeAgentEffort,
   type ModelCapabilities,
   RuntimeMode,
-} from "@t3tools/contracts";
+} from "@bcode/contracts";
 import {
   applyClaudePromptEffortPrefix,
   resolveApiModelId,
   trimOrNull,
-} from "@t3tools/shared/model";
+} from "@bcode/shared/model";
 import {
   Cause,
   DateTime,

@@ -11,7 +11,7 @@ import {
   type OrchestrationEvent,
   type OrchestrationReadModel,
   type ProjectId,
-} from "@t3tools/contracts";
+} from "@bcode/contracts";
 import { Effect, Layer, ManagedRuntime } from "effect";
 
 import {
@@ -24,7 +24,7 @@ import {
   type PerfSeedScenario,
   type PerfSeedScenarioId,
   type PerfSeedThreadScenario,
-} from "@t3tools/shared/perf/scenarioCatalog";
+} from "@bcode/shared/perf/scenarioCatalog";
 import { ServerConfig } from "../../src/config.ts";
 import { OrchestrationProjectionPipelineLive } from "../../src/orchestration/Layers/ProjectionPipeline.ts";
 import { OrchestrationProjectionSnapshotQueryLive } from "../../src/orchestration/Layers/ProjectionSnapshotQuery.ts";

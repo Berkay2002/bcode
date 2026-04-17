@@ -1,7 +1,7 @@
 import { join } from "node:path";
 
 import { seedPerfState } from "../integration/perf/seedPerfState.ts";
-import { getPerfSeedScenario } from "@t3tools/shared/perf/scenarioCatalog";
+import { getPerfSeedScenario } from "@bcode/shared/perf/scenarioCatalog";
 
 const PERF_SEED_JSON_START = "__T3_PERF_SEED_JSON_START__";
 const PERF_SEED_JSON_END = "__T3_PERF_SEED_JSON_END__";

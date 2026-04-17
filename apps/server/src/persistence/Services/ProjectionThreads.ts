@@ -15,7 +15,7 @@ import {
   RuntimeMode,
   ThreadId,
   TurnId,
-} from "@t3tools/contracts";
+} from "@bcode/contracts";
 import { Option, Schema, Context } from "effect";
 import type { Effect } from "effect";
 

@@ -3,8 +3,8 @@ import type {
   OrchestrationReadModel,
   ProjectId,
   ThreadId,
-} from "@t3tools/contracts";
-import { DispatchableClientOrchestrationCommand, OrchestrationCommand } from "@t3tools/contracts";
+} from "@bcode/contracts";
+import { DispatchableClientOrchestrationCommand, OrchestrationCommand } from "@bcode/contracts";
 import {
   Cause,
   Deferred,
