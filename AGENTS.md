@@ -12,16 +12,18 @@ BCode is a minimal web GUI for using coding agents. Claude is the default and pr
 This is a fork of T3 Code (pingdotgg/t3code). The rebrand is progressive:
 
 - **User-facing strings** (UI labels, dialog text, window titles, error messages, docs, release names): Use **"BCode"**. Never introduce new "T3 Code" references.
-- **Internal identifiers — do NOT rename** (upstream compatibility):
-  - Environment variables: `T3CODE_*` prefix
-  - Protocol scheme: `t3://`
-  - Home directory: `~/.t3`
-  - Package scopes: `@t3tools/*`
-  - npm package `t3`, `npx t3` commands
-  - COM identifiers: `com.t3tools.t3code`
-  - Linux desktop entries: `t3code.desktop`
-  - localStorage keys: `t3code:theme`
-  - TypeScript types, internal constants
+- **Internal identifiers — renamed in v0.0.19:**
+  - Environment variables: `T3CODE_*` → `BCODE_*` (`T3CODE_*` still read with a deprecation warning through v0.0.19; removed in v0.0.20).
+  - Home directory: `~/.t3` → `~/.bcode` (auto-migrated on first launch).
+  - Package scopes: `@t3tools/*` → `@bcode/*`.
+  - COM identifier: `com.t3tools.t3code` → `com.berkayorhan.bcode`.
+  - Linux desktop entry: `t3code.desktop` → `bcode.desktop`.
+  - localStorage keys: `t3code:*` → `bcode:*` (auto-migrated on first launch).
+  - Desktop internal protocol scheme: `t3://` → `bcode://`.
+- **Internal identifiers kept as-is** (upstream compatibility or legacy migration):
+  - `LEGACY_USER_DATA_DIR_NAME = "T3 Code (Alpha)"` / `"T3 Code (Dev)"` — pre-T3 electron userData path.
+  - `USER_DATA_DIR_NAME = "t3code"` / `"t3code-dev"` — electron's current userData subdir; a deliberate non-rename to preserve existing installs' window state, cookies, and renderer cache. May be renamed in a later cleanup.
+  - `LEGACY_T3_HOME_DIR_NAME = ".t3"` — read by the migration module only.
 - **Legacy directory names** (e.g. `LEGACY_USER_DATA_DIR_NAME`): Keep as "T3 Code" — they reference old on-disk paths for migration.
 - **Icons/logos**: Reuse existing assets for now.
 
@@ -44,7 +46,7 @@ Long term maintainability is a core priority. If you add new functionality, firs
 - `apps/server`: Node.js WebSocket server. Manages provider sessions for Claude (via agent SDK) and Codex (via JSON-RPC over stdio app-server), serves the React web app, and streams structured events to the browser through WebSocket push.
 - `apps/web`: React/Vite UI. Owns session UX, conversation/event rendering, and client-side state. Connects to the server via WebSocket.
 - `packages/contracts`: Shared effect/Schema schemas and TypeScript contracts for provider events, WebSocket protocol, and model/session types. Keep this package schema-only — no runtime logic.
-- `packages/shared`: Shared runtime utilities consumed by both server and web. Uses explicit subpath exports (e.g. `@t3tools/shared/git`) — no barrel index.
+- `packages/shared`: Shared runtime utilities consumed by both server and web. Uses explicit subpath exports (e.g. `@bcode/shared/git`) — no barrel index.
 
 ## Provider Architecture
 

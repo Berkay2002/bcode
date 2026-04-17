@@ -53,7 +53,7 @@ For PRs, follow the template in `@.github/pull_request_template.md` — keep PRs
 ## Naming Convention (Rebrand Rules)
 
 - **User-facing** (UI labels, dialogs, error messages): use **"BCode"**
-- **Internal identifiers** (env vars `T3CODE_*`, protocol `t3://`, home `~/.t3`, packages `@t3tools/*`, npm `t3`/`npx t3`, COM `com.t3tools.t3code`, localStorage `t3code:*`): keep as-is for upstream compatibility
+- **Internal identifiers** (`BCODE_*` env vars, `bcode://` internal scheme, `~/.bcode` home, `@bcode/*` packages, `npx @berkayorhan/bcode` CLI, `com.berkayorhan.bcode` COM, `bcode:*` localStorage): post-rebrand state. `T3CODE_*` env is still accepted with a deprecation warning through v0.0.19; `~/.t3` and `t3code:*` localStorage are auto-migrated on first launch of v0.0.19.
 
 ## Architecture & Detailed Guidelines
 
