@@ -37,6 +37,7 @@ import type { ContextMenuItem } from "@bcode/contracts";
 import { readEnv } from "@bcode/shared/env";
 import { RotatingFileSink } from "@bcode/shared/logging";
 import { runUserDataMigration } from "@bcode/shared/migration/userDataMigration";
+import { HOME_DIR_NAME } from "@bcode/shared/paths";
 import { parsePersistedServerObservabilitySettings } from "@bcode/shared/serverSettings";
 import * as NodeFileSystem from "@effect/platform-node/NodeFileSystem";
 import * as Effect from "effect/Effect";
@@ -125,7 +126,7 @@ const SET_SAVED_ENVIRONMENT_SECRET_CHANNEL = "desktop:set-saved-environment-secr
 const REMOVE_SAVED_ENVIRONMENT_SECRET_CHANNEL = "desktop:remove-saved-environment-secret";
 const GET_SERVER_EXPOSURE_STATE_CHANNEL = "desktop:get-server-exposure-state";
 const SET_SERVER_EXPOSURE_MODE_CHANNEL = "desktop:set-server-exposure-mode";
-const BASE_DIR = readEnv("HOME")?.trim() || Path.join(OS.homedir(), ".t3");
+const BASE_DIR = readEnv("HOME")?.trim() || Path.join(OS.homedir(), HOME_DIR_NAME);
 const STATE_DIR = Path.join(BASE_DIR, "userdata");
 const DESKTOP_SETTINGS_PATH = Path.join(STATE_DIR, "desktop-settings.json");
 const CLIENT_SETTINGS_PATH = Path.join(STATE_DIR, "client-settings.json");

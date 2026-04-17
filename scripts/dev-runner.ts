@@ -6,6 +6,7 @@ import * as NodeRuntime from "@effect/platform-node/NodeRuntime";
 import * as NodeServices from "@effect/platform-node/NodeServices";
 import { runUserDataMigration } from "@bcode/shared/migration/userDataMigration";
 import { NetService } from "@bcode/shared/Net";
+import { HOME_DIR_NAME } from "@bcode/shared/paths";
 import { Config, Data, Effect, Hash, Layer, Logger, Option, Path, Schema } from "effect";
 import { Argument, Command, Flag } from "effect/unstable/cli";
 import { ChildProcess } from "effect/unstable/process";
@@ -18,7 +19,7 @@ const DESKTOP_DEV_LOOPBACK_HOST = "127.0.0.1";
 const DEV_PORT_PROBE_HOSTS = ["127.0.0.1", "0.0.0.0", "::1", "::"] as const;
 
 export const DEFAULT_BCODE_HOME = Effect.map(Effect.service(Path.Path), (path) =>
-  path.join(homedir(), ".t3"),
+  path.join(homedir(), HOME_DIR_NAME),
 );
 
 const MODE_ARGS = {
