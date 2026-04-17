@@ -115,8 +115,8 @@ const desktopAppBranding: DesktopAppBranding = resolveDesktopAppBranding({
 });
 const APP_DISPLAY_NAME = desktopAppBranding.displayName;
 const APP_USER_MODEL_ID = isDevelopment ? "com.berkayorhan.bcode.dev" : "com.berkayorhan.bcode";
-const LINUX_DESKTOP_ENTRY_NAME = isDevelopment ? "t3code-dev.desktop" : "t3code.desktop";
-const LINUX_WM_CLASS = isDevelopment ? "t3code-dev" : "t3code";
+const LINUX_DESKTOP_ENTRY_NAME = isDevelopment ? "bcode-dev.desktop" : "bcode.desktop";
+const LINUX_WM_CLASS = isDevelopment ? "bcode-dev" : "bcode";
 const USER_DATA_DIR_NAME = isDevelopment ? "t3code-dev" : "t3code";
 const LEGACY_USER_DATA_DIR_NAME = isDevelopment ? "T3 Code (Dev)" : "T3 Code (Alpha)";
 const COMMIT_HASH_PATTERN = /^[0-9a-f]{7,40}$/i;
@@ -706,8 +706,8 @@ function resolveEmbeddedCommitHash(): string | null {
 
   try {
     const raw = FS.readFileSync(packageJsonPath, "utf8");
-    const parsed = JSON.parse(raw) as { t3codeCommitHash?: unknown };
-    return normalizeCommitHash(parsed.t3codeCommitHash);
+    const parsed = JSON.parse(raw) as { bcodeCommitHash?: unknown };
+    return normalizeCommitHash(parsed.bcodeCommitHash);
   } catch {
     return null;
   }
